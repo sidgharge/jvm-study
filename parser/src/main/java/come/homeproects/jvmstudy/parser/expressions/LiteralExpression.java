@@ -2,11 +2,11 @@ package come.homeproects.jvmstudy.parser.expressions;
 
 import come.homeproects.jvmstudy.parser.lexer.Token;
 
-public record NumberExpression(Token token) implements Expression {
+public record LiteralExpression(Token token) implements Expression {
 
     @Override
     public ExpressionType expressionType() {
-        return ExpressionType.NUMBER;
+        return ExpressionType.LITERAL;
     }
 
     @Override

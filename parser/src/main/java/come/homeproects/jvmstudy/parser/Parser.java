@@ -2,7 +2,7 @@ package come.homeproects.jvmstudy.parser;
 
 import come.homeproects.jvmstudy.parser.expressions.BinaryExpression;
 import come.homeproects.jvmstudy.parser.expressions.Expression;
-import come.homeproects.jvmstudy.parser.expressions.NumberExpression;
+import come.homeproects.jvmstudy.parser.expressions.LiteralExpression;
 import come.homeproects.jvmstudy.parser.expressions.UnaryExpression;
 import come.homeproects.jvmstudy.parser.lexer.Lexer;
 import come.homeproects.jvmstudy.parser.lexer.Token;
@@ -76,23 +76,27 @@ public class Parser {
     private Expression parsePrimaryExpression() {
         Token token = current();
         if (token.type() == TokenType.OPEN_BRACKET_TOKEN) {
+            advance();
             return parseBracketExpression();
         }
         if (token.type() == TokenType.NUMBER_TOKEN) {
             advance();
-            return new NumberExpression(token);
+            return new LiteralExpression(token);
         }
         if (token.type() == TokenType.PLUS_TOKEN || token.type() == TokenType.MINUS_TOKEN) {
             advance();
             Expression expression = parsePrimaryExpression();
             return new UnaryExpression(token, expression);
         }
+        if (token.type() == TokenType.KEYWORD_TRUE || token.type() ==  TokenType.KEYWORD_FALSE) {
+            advance();
+            return new LiteralExpression(token);
+        }
         this.diagnostics.addDiagnostic("ERROR: expected number or bracket or '+' or '-' at index %d, got '%s'", token.startIndex(), token.value());
-        return new NumberExpression(new Token("", TokenType.NUMBER_TOKEN, token.startIndex(), token.endIndex()));
+        return new LiteralExpression(new Token("", TokenType.NUMBER_TOKEN, token.startIndex(), token.endIndex()));
     }
 
     private Expression parseBracketExpression() {
-        advance();
         Expression expression = parseExpression();
         Token token = current();
         if (token.type() != TokenType.CLOSED_BRACKET_TOKEN) {

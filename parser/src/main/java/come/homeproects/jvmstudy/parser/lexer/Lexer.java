@@ -1,5 +1,6 @@
 package come.homeproects.jvmstudy.parser.lexer;
 
+import static java.lang.Character.isAlphabetic;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isWhitespace;
 
@@ -51,9 +52,48 @@ public class Lexer {
             return new Token(")", TokenType.CLOSED_BRACKET_TOKEN, index, index++);
         }
 
+        if (ch == '&' || ch == '|') {
+            return logicalOperator();
+        }
+
+        if (isAlphabetic(ch)) {
+            return wordToken();
+        }
+
+
+
         Token token = new Token(String.valueOf(ch), TokenType.BAD_SYNTAX_TOKEN, index, index);
         next();
         return token;
+    }
+
+    private Token logicalOperator() {
+        if (peek() == '&' && next() == '&') {
+            return new Token("&&", TokenType.KEYWORD_AND, index - 1, index++);
+        }
+        if (peek() == '|' && next() == '|') {
+            return new Token("||", TokenType.KEYWORD_OR, index - 1, index++);
+        }
+        return new Token("", TokenType.BAD_SYNTAX_TOKEN, index, index++);
+    }
+
+    private Token wordToken() {
+        int start = index;
+        StringBuilder builder = new StringBuilder();
+        while (!isAtEnd()) {
+            char ch = peek();
+            if (ch == NULL_CHAR) {
+                break;
+            }
+            if (!isAlphabetic(ch)) {
+                break;
+            }
+            builder.append(ch);
+            index++;
+        }
+        String value = builder.toString();
+        TokenType tokenType = Grammar.getWordTokenType(value);
+        return new Token(value, tokenType, start, index - 1);
     }
 
     private Token operatorToken(char value, TokenType tokenType) {

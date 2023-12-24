@@ -21,6 +21,9 @@ public class TokenPrecedence {
         precendences.put(TokenType.PLUS_TOKEN, 1);
         precendences.put(TokenType.MINUS_TOKEN, 1);
 
+        precendences.put(TokenType.KEYWORD_AND, 1);
+        precendences.put(TokenType.KEYWORD_OR, 1);
+
         precendences.put(TokenType.END_OF_FILE_TOKEN, -1);
         precendences.put(TokenType.BAD_SYNTAX_TOKEN, -1);
     }
