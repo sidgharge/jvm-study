@@ -2,15 +2,14 @@ package come.homeproects.jvmstudy.parser.expressions;
 
 import come.homeproects.jvmstudy.parser.lexer.Token;
 
-public record NumberExpression(Token token) implements Expression {
-
+public record UnaryExpression(Token operator, Expression expression) implements Expression {
     @Override
     public ExpressionType expressionType() {
-        return ExpressionType.NUMBER;
+        return ExpressionType.UNARY;
     }
 
     @Override
     public String toString() {
-        return token.value();
+        return operator.value() + expression;
     }
 }

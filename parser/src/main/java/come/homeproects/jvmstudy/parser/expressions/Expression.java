@@ -6,10 +6,5 @@ import java.util.List;
 
 public interface Expression {
 
-    List<Expression> children();
-
     ExpressionType expressionType();
-
-    Token token();
-
 }

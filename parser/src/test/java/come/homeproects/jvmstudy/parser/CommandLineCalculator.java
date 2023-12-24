@@ -19,11 +19,11 @@ public class CommandLineCalculator {
 
     public static void main(String[] args) {
 //        String expression = "4 - 1 + 5";
-        String expression = "-10 + 5";
+        String expression = "+--(-10 + -5)";
 
         Expression exp = new Parser(expression,  true).parse();
         System.out.println("--------------- Expression -------------------------");
-        System.out.println(exp);
+        System.out.println(exp + " = " + new Evaluator().evaluate(exp));
     }
 
     public static void main2(String[] args) {

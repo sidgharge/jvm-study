@@ -3,6 +3,7 @@ package come.homeproects.jvmstudy.parser;
 import come.homeproects.jvmstudy.parser.expressions.BinaryExpression;
 import come.homeproects.jvmstudy.parser.expressions.Expression;
 import come.homeproects.jvmstudy.parser.expressions.NumberExpression;
+import come.homeproects.jvmstudy.parser.expressions.UnaryExpression;
 import come.homeproects.jvmstudy.parser.lexer.Lexer;
 import come.homeproects.jvmstudy.parser.lexer.Token;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
@@ -81,7 +82,12 @@ public class Parser {
             advance();
             return new NumberExpression(token);
         }
-        this.diagnostics.addDiagnostic("ERROR: expected number or a bracket at index %d, got '%s'", token.startIndex(), token.value());
+        if (token.type() == TokenType.PLUS_TOKEN || token.type() == TokenType.MINUS_TOKEN) {
+            advance();
+            Expression expression = parsePrimaryExpression();
+            return new UnaryExpression(token, expression);
+        }
+        this.diagnostics.addDiagnostic("ERROR: expected number or bracket or '+' or '-' at index %d, got '%s'", token.startIndex(), token.value());
         return new NumberExpression(new Token("", TokenType.NUMBER_TOKEN, token.startIndex(), token.endIndex()));
     }
 
