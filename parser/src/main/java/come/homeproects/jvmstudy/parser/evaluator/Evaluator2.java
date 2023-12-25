@@ -1,26 +1,22 @@
 package come.homeproects.jvmstudy.parser.evaluator;
 
-import come.homeproects.jvmstudy.parser.bindexpressions.BinaryBoundExpression;
-import come.homeproects.jvmstudy.parser.bindexpressions.BoundExpression;
-import come.homeproects.jvmstudy.parser.bindexpressions.LiteralBoundExpression;
-import come.homeproects.jvmstudy.parser.bindexpressions.UnaryBoundExpression;
 import come.homeproects.jvmstudy.parser.expressions.BinaryExpression;
 import come.homeproects.jvmstudy.parser.expressions.Expression;
 import come.homeproects.jvmstudy.parser.expressions.LiteralExpression;
 import come.homeproects.jvmstudy.parser.expressions.UnaryExpression;
 
-public class Evaluator {
+public class Evaluator2 {
 
-    public Object evaluate(BoundExpression expression) {
+    public Object evaluate(Expression expression) {
         return switch (expression) {
-            case BinaryBoundExpression binaryExpression -> binaryExpression(binaryExpression);
-            case UnaryBoundExpression unaryExpression -> unaryExpression(unaryExpression);
-            case LiteralBoundExpression literalExpression -> literalExpression(literalExpression);
-            default -> throw new RuntimeException("Unhandled expression type " + expression.getClass());
+            case BinaryExpression binaryExpression -> binaryExpression(binaryExpression);
+            case UnaryExpression unaryExpression -> unaryExpression(unaryExpression);
+            case LiteralExpression literalExpression -> literalExpression(literalExpression);
+            default -> throw new RuntimeException("Unhandled expression type " + expression.expressionType());
         };
     }
 
-    private Object literalExpression(LiteralBoundExpression literalExpression) {
+    private Object literalExpression(LiteralExpression literalExpression) {
         return switch (literalExpression.token().type()) {
             case KEYWORD_TRUE_TOKEN -> true;
             case KEYWORD_FALSE_TOKEN -> false;
@@ -29,17 +25,17 @@ public class Evaluator {
         };
     }
 
-    private Object unaryExpression(UnaryBoundExpression unaryExpression) {
-        return switch (unaryExpression.operatorToken().type()) {
-            case PLUS_TOKEN -> (int)evaluate(unaryExpression.operand());
-            case MINUS_TOKEN -> -(int)evaluate(unaryExpression.operand());
-            case BANG_TOKEN -> !(boolean)evaluate(unaryExpression.operand());
-            default -> throw new RuntimeException("Invalid unary operator at index: " + unaryExpression.operatorToken().startIndex());
+    private Object unaryExpression(UnaryExpression unaryExpression) {
+        return switch (unaryExpression.operator().type()) {
+            case PLUS_TOKEN -> (int)evaluate(unaryExpression.expression());
+            case MINUS_TOKEN -> -(int)evaluate(unaryExpression.expression());
+            case BANG_TOKEN -> !(boolean)evaluate(unaryExpression.expression());
+            default -> throw new RuntimeException("Invalid unary operator at index: " + unaryExpression.operator().startIndex());
         };
     }
 
-    private Object binaryExpression(BinaryBoundExpression binaryExpression) {
-        return switch (binaryExpression.operatorToken().type()) {
+    private Object binaryExpression(BinaryExpression binaryExpression) {
+        return switch (binaryExpression.token().type()) {
             case PLUS_TOKEN -> (int)evaluate(binaryExpression.left()) + (int)evaluate(binaryExpression.right());
             case MINUS_TOKEN -> (int)evaluate(binaryExpression.left()) - (int)evaluate(binaryExpression.right());
             case START_TOKEN -> (int)evaluate(binaryExpression.left()) * (int)evaluate(binaryExpression.right());

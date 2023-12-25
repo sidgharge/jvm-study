@@ -176,4 +176,8 @@ public class Parser {
             }
         }
     }
+
+    public Diagnostics diagnostics() {
+        return diagnostics;
+    }
 }

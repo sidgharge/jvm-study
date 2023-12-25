@@ -22,5 +22,17 @@ public enum TokenType {
     DOUBLE_PIPE_TOKEN,
     DOUBLE_EQUALS_TOKEN,
     BANG_EQUALS_TOKEN,
-    BANG_TOKEN,
+    BANG_TOKEN;
+
+    public boolean isMathematicalOperatorToken() {
+        return this == PLUS_TOKEN ||
+                this == MINUS_TOKEN ||
+                this == START_TOKEN ||
+                this == SLASH_TOKEN;
+    }
+
+    public boolean isLogicalOperatorToken() {
+        return this == DOUBLE_EQUALS_TOKEN ||
+                this == BANG_EQUALS_TOKEN;
+    }
 }
