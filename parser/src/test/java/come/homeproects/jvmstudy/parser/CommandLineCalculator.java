@@ -22,7 +22,7 @@ public class CommandLineCalculator {
     public static void main(String[] args) {
 //        String expression = "4 - 1 + 5";
 
-        String expression = "5 + 2 == 6 + 1 == 7";
+        String expression = "1 + 5 * 6";
 
 //        System.out.println(new Evaluator2().evaluate(new Parser(expression, true).parse()));
 
@@ -30,7 +30,7 @@ public class CommandLineCalculator {
         BoundExpression boundExpression = binder.bind(expression);
         if (binder.diagnostics().hasErrors()) {
             binder.diagnostics().errors().forEach(System.err::println);
-//            System.out.println(new Evaluator().evaluate(boundExpression));
+            System.out.println(new Evaluator().evaluate(boundExpression));
             return;
         }
         System.out.println(new Evaluator().evaluate(boundExpression));

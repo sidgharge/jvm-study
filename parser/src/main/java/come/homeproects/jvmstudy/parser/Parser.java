@@ -1,5 +1,7 @@
 package come.homeproects.jvmstudy.parser;
 
+import come.homeproects.jvmstudy.parser.diagnostics.Diagnostic;
+import come.homeproects.jvmstudy.parser.diagnostics.Diagnostics;
 import come.homeproects.jvmstudy.parser.expressions.BinaryExpression;
 import come.homeproects.jvmstudy.parser.expressions.Expression;
 import come.homeproects.jvmstudy.parser.expressions.LiteralExpression;
@@ -78,7 +80,7 @@ public class Parser {
         if (precedence != null) {
             return precedence;
         }
-        diagnostics.addDiagnostic("Precedence is not defined for: %s", token);
+        diagnostics.addDiagnostic(token.startIndex(), token.endIndex(), "Precedence is not defined for: %s", token.type());
         return Integer.MAX_VALUE;
     }
 
@@ -106,7 +108,7 @@ public class Parser {
         if (token.type() == TokenType.KEYWORD_TRUE_TOKEN || token.type() ==  TokenType.KEYWORD_FALSE_TOKEN) {
             return new LiteralExpression(token);
         }
-        this.diagnostics.addDiagnostic("ERROR: Invalid token at index %d, got '%s'", token.startIndex(), token.value());
+        this.diagnostics.addDiagnostic(token.startIndex(), token.endIndex(), "Invalid token: '%s'", token.value());
         return new LiteralExpression(new Token("", TokenType.NUMBER_TOKEN, token.startIndex(), token.endIndex()));
     }
 
@@ -114,7 +116,7 @@ public class Parser {
         Expression expression = parseExpression();
         Token token = current();
         if (token.type() != TokenType.CLOSED_BRACKET_TOKEN) {
-            diagnostics.addDiagnostic("ERROR: Expected closing bracket, got '%s' at index %d", token.value(), token.startIndex());
+            diagnostics.addDiagnostic(token.startIndex(), token.endIndex(), "Expected closing bracket");
         }
         advance();
         return expression;
@@ -158,8 +160,8 @@ public class Parser {
             return;
         }
         System.err.println("--------------- ERRORS -------------------------");
-        for (String error : this.diagnostics.errors()) {
-            System.err.println(error);
+        for (Diagnostic diagnostic : this.diagnostics.errors()) {
+            System.err.println(diagnostic.message());
         }
     }
 
@@ -172,7 +174,7 @@ public class Parser {
                 break;
             }
             if (token.type() == TokenType.BAD_SYNTAX_TOKEN) {
-                this.diagnostics.addDiagnostic("ERROR: Unrecognized token '%s' at index %d", token.value(), token.startIndex());
+                this.diagnostics.addDiagnostic(token.startIndex(), token.endIndex(), "Unrecognized token '%s' at index %d");
             }
         }
     }
