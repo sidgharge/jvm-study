@@ -57,4 +57,29 @@ public class BooleanTests {
         Object result = calculator.evaluateToObject("(true || false) && (false && true)");
         assertThat(result).isEqualTo(false);
     }
+
+    @Test
+    public void numbersEquality() {
+        Object result = calculator.evaluateToObject("1 + 2 == 3");
+        assertThat(result).isEqualTo(true);
+    }
+
+    @Test
+    public void numbersEquality2() {
+        Object result = calculator.evaluateToObject("1 + 4 == 3");
+        assertThat(result).isEqualTo(false);
+    }
+
+
+    @Test
+    public void numbersEquality3() {
+        Object result = calculator.evaluateToObject("1 + 4 == 3 + 2");
+        assertThat(result).isEqualTo(true);
+    }
+
+    @Test
+    public void numbersEquality4() {
+        Object result = calculator.evaluateToObject("1 + 4 == 3 + 5 == false");
+        assertThat(result).isEqualTo(true);
+    }
 }

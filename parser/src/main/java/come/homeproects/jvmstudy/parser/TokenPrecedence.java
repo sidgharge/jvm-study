@@ -11,18 +11,21 @@ public class TokenPrecedence {
     private final Map<TokenType, Integer> precendences;
 
     public TokenPrecedence() {
+        int i = 0;
         precendences = new HashMap<>();
 
-        precendences.put(TokenType.NUMBER_TOKEN, 0);
+        precendences.put(TokenType.NUMBER_TOKEN, i++);
 
-        precendences.put(TokenType.MULTIPLICATION_TOKEN, 2);
-        precendences.put(TokenType.DIVISION_TOKEN, 2);
+        precendences.put(TokenType.DOUBLE_EQUALS_TOKEN, i++);
 
-        precendences.put(TokenType.PLUS_TOKEN, 1);
-        precendences.put(TokenType.MINUS_TOKEN, 1);
+        precendences.put(TokenType.PLUS_TOKEN, i);
+        precendences.put(TokenType.MINUS_TOKEN, i);
+        precendences.put(TokenType.DOUBLE_AMPERSAND_TOKEN, i);
+        precendences.put(TokenType.DOUBLE_PIPE_TOKEN, i++);
 
-        precendences.put(TokenType.KEYWORD_AND, 1);
-        precendences.put(TokenType.KEYWORD_OR, 1);
+        precendences.put(TokenType.START_TOKEN, i);
+        precendences.put(TokenType.SLASH_TOKEN, i++);
+
 
         precendences.put(TokenType.END_OF_FILE_TOKEN, -1);
         precendences.put(TokenType.BAD_SYNTAX_TOKEN, -1);

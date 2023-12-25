@@ -18,8 +18,8 @@ public class Evaluator {
 
     private Object literalExpression(LiteralExpression literalExpression) {
         return switch (literalExpression.token().type()) {
-            case KEYWORD_TRUE -> true;
-            case KEYWORD_FALSE -> false;
+            case KEYWORD_TRUE_TOKEN -> true;
+            case KEYWORD_FALSE_TOKEN -> false;
             case NUMBER_TOKEN -> Integer.parseInt(literalExpression.token().value());
             default -> throw new RuntimeException("Unhandled keyword " + literalExpression.token().value());
         };
@@ -37,10 +37,11 @@ public class Evaluator {
         return switch (binaryExpression.token().type()) {
             case PLUS_TOKEN -> (int)evaluate(binaryExpression.left()) + (int)evaluate(binaryExpression.right());
             case MINUS_TOKEN -> (int)evaluate(binaryExpression.left()) - (int)evaluate(binaryExpression.right());
-            case MULTIPLICATION_TOKEN -> (int)evaluate(binaryExpression.left()) * (int)evaluate(binaryExpression.right());
-            case DIVISION_TOKEN -> (int)evaluate(binaryExpression.left()) / (int)evaluate(binaryExpression.right());
-            case KEYWORD_AND -> (boolean)evaluate(binaryExpression.left()) && (boolean)evaluate(binaryExpression.right());
-            case KEYWORD_OR -> (boolean)evaluate(binaryExpression.left()) || (boolean)evaluate(binaryExpression.right());
+            case START_TOKEN -> (int)evaluate(binaryExpression.left()) * (int)evaluate(binaryExpression.right());
+            case SLASH_TOKEN -> (int)evaluate(binaryExpression.left()) / (int)evaluate(binaryExpression.right());
+            case DOUBLE_AMPERSAND_TOKEN -> (boolean)evaluate(binaryExpression.left()) && (boolean)evaluate(binaryExpression.right());
+            case DOUBLE_PIPE_TOKEN -> (boolean)evaluate(binaryExpression.left()) || (boolean)evaluate(binaryExpression.right());
+            case DOUBLE_EQUALS_TOKEN -> evaluate(binaryExpression.left()).equals(evaluate(binaryExpression.right()));
             default -> throw new RuntimeException("Unknown token");
         };
     }

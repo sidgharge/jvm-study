@@ -39,10 +39,10 @@ public class Lexer {
             return operatorToken('-', TokenType.MINUS_TOKEN);
         }
         if (ch == '*') {
-            return operatorToken('*', TokenType.MULTIPLICATION_TOKEN);
+            return operatorToken('*', TokenType.START_TOKEN);
         }
         if (ch == '/') {
-            return operatorToken('/', TokenType.DIVISION_TOKEN);
+            return operatorToken('/', TokenType.SLASH_TOKEN);
         }
 
         if (ch == '(') {
@@ -56,6 +56,10 @@ public class Lexer {
             return logicalOperator();
         }
 
+        if (ch == '=') {
+            return equalsOperator();
+        }
+
         if (isAlphabetic(ch)) {
             return wordToken();
         }
@@ -67,12 +71,19 @@ public class Lexer {
         return token;
     }
 
+    private Token equalsOperator() {
+        if (peek() == '=' && next() == '=') {
+            return new Token("==", TokenType.DOUBLE_EQUALS_TOKEN, index - 1, index++);
+        }
+        return new Token("", TokenType.BAD_SYNTAX_TOKEN, index - 1, index++);
+    }
+
     private Token logicalOperator() {
         if (peek() == '&' && next() == '&') {
-            return new Token("&&", TokenType.KEYWORD_AND, index - 1, index++);
+            return new Token("&&", TokenType.DOUBLE_AMPERSAND_TOKEN, index - 1, index++);
         }
         if (peek() == '|' && next() == '|') {
-            return new Token("||", TokenType.KEYWORD_OR, index - 1, index++);
+            return new Token("||", TokenType.DOUBLE_PIPE_TOKEN, index - 1, index++);
         }
         return new Token("", TokenType.BAD_SYNTAX_TOKEN, index, index++);
     }

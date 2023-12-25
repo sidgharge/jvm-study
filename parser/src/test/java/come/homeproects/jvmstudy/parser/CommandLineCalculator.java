@@ -3,7 +3,6 @@ package come.homeproects.jvmstudy.parser;
 import come.homeproects.jvmstudy.parser.evaluator.Evaluator;
 import come.homeproects.jvmstudy.parser.expressions.Expression;
 
-import java.util.Objects;
 import java.util.Scanner;
 
 public class CommandLineCalculator {
@@ -13,18 +12,18 @@ public class CommandLineCalculator {
     }
 
     public Object evaluateToObject(String expression) {
-        Parser parser = new Parser(expression);
+        Parser parser = new Parser(expression, false);
         Expression exp = parser.parse();
 
-        System.out.println("--------------- Expression -------------------------");
-        System.out.println(exp);
+//        System.out.println("--------------- Expression -------------------------");
+//        System.out.println(exp);
 
         return new Evaluator().evaluate(exp);
     }
 
     public static void main(String[] args) {
 //        String expression = "4 - 1 + 5";
-        String expression = "(true && false) && (true && true)";
+        String expression = "4 + 2 == 5 + 1 == true";
 
         Expression exp = new Parser(expression,  true).parse();
         System.out.println("--------------- Expression -------------------------");

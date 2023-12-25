@@ -75,24 +75,25 @@ public class Parser {
 
     private Expression parsePrimaryExpression() {
         Token token = current();
+        advance();
+        return tokenToExpression(token);
+    }
+
+    private Expression tokenToExpression(Token token) {
         if (token.type() == TokenType.OPEN_BRACKET_TOKEN) {
-            advance();
             return parseBracketExpression();
         }
         if (token.type() == TokenType.NUMBER_TOKEN) {
-            advance();
             return new LiteralExpression(token);
         }
         if (token.type() == TokenType.PLUS_TOKEN || token.type() == TokenType.MINUS_TOKEN) {
-            advance();
             Expression expression = parsePrimaryExpression();
             return new UnaryExpression(token, expression);
         }
-        if (token.type() == TokenType.KEYWORD_TRUE || token.type() ==  TokenType.KEYWORD_FALSE) {
-            advance();
+        if (token.type() == TokenType.KEYWORD_TRUE_TOKEN || token.type() ==  TokenType.KEYWORD_FALSE_TOKEN) {
             return new LiteralExpression(token);
         }
-        this.diagnostics.addDiagnostic("ERROR: expected number or bracket or '+' or '-' at index %d, got '%s'", token.startIndex(), token.value());
+        this.diagnostics.addDiagnostic("ERROR: Invalid token at index %d, got '%s'", token.startIndex(), token.value());
         return new LiteralExpression(new Token("", TokenType.NUMBER_TOKEN, token.startIndex(), token.endIndex()));
     }
 
