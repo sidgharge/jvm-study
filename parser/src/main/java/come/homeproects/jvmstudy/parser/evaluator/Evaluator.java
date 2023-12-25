@@ -29,6 +29,7 @@ public class Evaluator {
         return switch (unaryExpression.operator().type()) {
             case PLUS_TOKEN -> (int)evaluate(unaryExpression.expression());
             case MINUS_TOKEN -> -(int)evaluate(unaryExpression.expression());
+            case BANG_TOKEN -> !(boolean)evaluate(unaryExpression.expression());
             default -> throw new RuntimeException("Invalid unary operator at index: " + unaryExpression.operator().startIndex());
         };
     }

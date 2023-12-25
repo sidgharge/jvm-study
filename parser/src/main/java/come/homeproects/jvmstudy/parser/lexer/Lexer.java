@@ -57,7 +57,7 @@ public class Lexer {
         }
 
         if (ch == '=' || ch == '!') {
-            return equalsOperator();
+            return bangOrEqualsRelatedOperator();
         }
 
         if (isAlphabetic(ch)) {
@@ -71,7 +71,7 @@ public class Lexer {
         return token;
     }
 
-    private Token equalsOperator() {
+    private Token bangOrEqualsRelatedOperator() {
         char ch1 = currentAndAdvance();
         char ch2 = currentAndAdvance();
         if (ch1 == '=' && ch2 == '=') {
@@ -79,6 +79,10 @@ public class Lexer {
         }
         if (ch1 == '!' && ch2 == '=') {
             return new Token("!=", TokenType.BANG_EQUALS_TOKEN, index - 1, index++);
+        }
+        if (ch1 == '!' && ch2 != '=') {
+            index--;
+            return new Token("!", TokenType.BANG_TOKEN, index - 1, index - 1);
         }
         return new Token("", TokenType.BAD_SYNTAX_TOKEN, index - 1, index++);
     }

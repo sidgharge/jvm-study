@@ -99,6 +99,10 @@ public class Parser {
             Expression expression = parsePrimaryExpression();
             return new UnaryExpression(token, expression);
         }
+        if (token.type() == TokenType.BANG_TOKEN) {
+            Expression expression = parsePrimaryExpression();
+            return new UnaryExpression(token, expression);
+        }
         if (token.type() == TokenType.KEYWORD_TRUE_TOKEN || token.type() ==  TokenType.KEYWORD_FALSE_TOKEN) {
             return new LiteralExpression(token);
         }

@@ -100,4 +100,22 @@ public class BooleanTests {
         Object result = calculator.evaluateToObject("1 + 2 !=  3");
         assertThat(result).isEqualTo(false);
     }
+
+    @Test
+    public void negation1() {
+        Object result = calculator.evaluateToObject("!true");
+        assertThat(result).isEqualTo(false);
+    }
+
+    @Test
+    public void negation2() {
+        Object result = calculator.evaluateToObject("(true && false) == !true");
+        assertThat(result).isEqualTo(true);
+    }
+
+    @Test
+    public void negation3() {
+        Object result = calculator.evaluateToObject("!(true && false)");
+        assertThat(result).isEqualTo(true);
+    }
 }

@@ -22,4 +22,5 @@ public enum TokenType {
     DOUBLE_PIPE_TOKEN,
     DOUBLE_EQUALS_TOKEN,
     BANG_EQUALS_TOKEN,
+    BANG_TOKEN,
 }
