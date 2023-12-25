@@ -43,7 +43,6 @@ public class Parser {
         tokenize();
         if (this.diagnostics.hasErrors()) {
             printErrors();
-            return null;
         }
         printTokens();
 
@@ -63,14 +62,24 @@ public class Parser {
 
         while (!isAtEnd()) {
             Token operatorToken = current();
-            if (tokenPrecedence.precedence(operatorToken) <= parentPrecedence) {
+            int precedence = getPrecedence(operatorToken);
+            if (precedence <= parentPrecedence) {
                 break;
             }
             advance();
-            Expression right = parseExpression(tokenPrecedence.precedence(operatorToken));
+            Expression right = parseExpression(precedence);
             left = new BinaryExpression(left, right, operatorToken);
         }
         return left;
+    }
+
+    private int getPrecedence(Token token) {
+        Integer precedence = tokenPrecedence.precedence(token);
+        if (precedence != null) {
+            return precedence;
+        }
+        diagnostics.addDiagnostic("Precedence is not defined for: %s", token);
+        return Integer.MAX_VALUE;
     }
 
     private Expression parsePrimaryExpression() {

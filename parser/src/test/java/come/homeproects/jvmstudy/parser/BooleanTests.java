@@ -82,4 +82,22 @@ public class BooleanTests {
         Object result = calculator.evaluateToObject("1 + 4 == 3 + 5 == false");
         assertThat(result).isEqualTo(true);
     }
+
+    @Test
+    public void notEquals1() {
+        Object result = calculator.evaluateToObject("true != false");
+        assertThat(result).isEqualTo(true);
+    }
+
+    @Test
+    public void notEquals2() {
+        Object result = calculator.evaluateToObject("1 + 2 !=  2 + 3");
+        assertThat(result).isEqualTo(true);
+    }
+
+    @Test
+    public void notEquals3() {
+        Object result = calculator.evaluateToObject("1 + 2 !=  3");
+        assertThat(result).isEqualTo(false);
+    }
 }

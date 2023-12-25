@@ -23,7 +23,8 @@ public class CommandLineCalculator {
 
     public static void main(String[] args) {
 //        String expression = "4 - 1 + 5";
-        String expression = "4 + 2 == 5 + 1 == true";
+
+        String expression = "(false && true) || true";
 
         Expression exp = new Parser(expression,  true).parse();
         System.out.println("--------------- Expression -------------------------");

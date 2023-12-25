@@ -14,9 +14,11 @@ public class TokenPrecedence {
         int i = 0;
         precendences = new HashMap<>();
 
-        precendences.put(TokenType.NUMBER_TOKEN, i++);
+        precendences.put(TokenType.NUMBER_TOKEN, i);
+        precendences.put(TokenType.CLOSED_BRACKET_TOKEN, i++);
 
-        precendences.put(TokenType.DOUBLE_EQUALS_TOKEN, i++);
+        precendences.put(TokenType.DOUBLE_EQUALS_TOKEN, i);
+        precendences.put(TokenType.BANG_EQUALS_TOKEN, i++);
 
         precendences.put(TokenType.PLUS_TOKEN, i);
         precendences.put(TokenType.MINUS_TOKEN, i);
@@ -31,17 +33,8 @@ public class TokenPrecedence {
         precendences.put(TokenType.BAD_SYNTAX_TOKEN, -1);
     }
 
-    public boolean hasHigherPrecedence(Token token1, Token token2) {
-        int priority1 = precendences.get(token1.type());
-        int priority2 = precendences.get(token2.type());
-        if (priority1 < priority2) {
-            return true;
-        }
-        return false;
-    }
-
-    public int precedence(Token token) {
-        return precendences.getOrDefault(token.type(), 0);
+    public Integer precedence(Token token) {
+        return precendences.get(token.type());
     }
 
     public boolean hasHigherPrecedence(Token token, int precedence) {
