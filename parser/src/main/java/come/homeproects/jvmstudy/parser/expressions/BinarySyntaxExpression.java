@@ -2,11 +2,11 @@ package come.homeproects.jvmstudy.parser.expressions;
 
 import come.homeproects.jvmstudy.parser.lexer.Token;
 
-public record BinaryExpression(Expression left, Expression right, Token token) implements Expression {
+public record BinarySyntaxExpression(SyntaxExpression left, SyntaxExpression right, Token token) implements SyntaxExpression {
 
     @Override
-    public ExpressionType expressionType() {
-        return ExpressionType.BINARY_EXPRESSION;
+    public SyntaxExpressionType expressionType() {
+        return SyntaxExpressionType.BINARY_EXPRESSION;
     }
 
     @Override

@@ -2,10 +2,10 @@ package come.homeproects.jvmstudy.parser;
 
 import come.homeproects.jvmstudy.parser.diagnostics.Diagnostic;
 import come.homeproects.jvmstudy.parser.diagnostics.Diagnostics;
-import come.homeproects.jvmstudy.parser.expressions.BinaryExpression;
-import come.homeproects.jvmstudy.parser.expressions.Expression;
-import come.homeproects.jvmstudy.parser.expressions.LiteralExpression;
-import come.homeproects.jvmstudy.parser.expressions.UnaryExpression;
+import come.homeproects.jvmstudy.parser.expressions.BinarySyntaxExpression;
+import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
+import come.homeproects.jvmstudy.parser.expressions.LiteralSyntaxExpression;
+import come.homeproects.jvmstudy.parser.expressions.UnarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.lexer.Lexer;
 import come.homeproects.jvmstudy.parser.lexer.Token;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
@@ -41,26 +41,26 @@ public class Parser {
     }
 
 
-    public Expression parse() {
+    public SyntaxExpression parse() {
         tokenize();
         if (this.diagnostics.hasErrors()) {
             printErrors();
         }
         printTokens();
 
-        Expression expression = parseExpression();
+        SyntaxExpression syntaxExpression = parseExpression();
         if (this.diagnostics.hasErrors()) {
             printErrors();
         }
-        return expression;
+        return syntaxExpression;
     }
 
-    private Expression parseExpression() {
+    private SyntaxExpression parseExpression() {
         return parseExpression(0);
     }
 
-    private Expression parseExpression(int parentPrecedence) {
-        Expression left = parsePrimaryExpression();
+    private SyntaxExpression parseExpression(int parentPrecedence) {
+        SyntaxExpression left = parsePrimaryExpression();
 
         while (!isAtEnd()) {
             Token operatorToken = current();
@@ -69,8 +69,8 @@ public class Parser {
                 break;
             }
             advance();
-            Expression right = parseExpression(precedence);
-            left = new BinaryExpression(left, right, operatorToken);
+            SyntaxExpression right = parseExpression(precedence);
+            left = new BinarySyntaxExpression(left, right, operatorToken);
         }
         return left;
     }
@@ -80,46 +80,46 @@ public class Parser {
         if (precedence != null) {
             return precedence;
         }
-        diagnostics.addDiagnostic(token.startIndex(), token.endIndex(), "Precedence is not defined for: %s", token.type());
+        diagnostics.addDiagnostic(token, "Precedence is not defined for: %s", token.type());
         return Integer.MAX_VALUE;
     }
 
-    private Expression parsePrimaryExpression() {
+    private SyntaxExpression parsePrimaryExpression() {
         Token token = current();
         advance();
         return tokenToExpression(token);
     }
 
-    private Expression tokenToExpression(Token token) {
+    private SyntaxExpression tokenToExpression(Token token) {
         if (token.type() == TokenType.OPEN_BRACKET_TOKEN) {
             return parseBracketExpression();
         }
         if (token.type() == TokenType.NUMBER_TOKEN) {
-            return new LiteralExpression(token);
+            return new LiteralSyntaxExpression(token);
         }
         if (token.type() == TokenType.PLUS_TOKEN || token.type() == TokenType.MINUS_TOKEN) {
-            Expression expression = parsePrimaryExpression();
-            return new UnaryExpression(token, expression);
+            SyntaxExpression syntaxExpression = parsePrimaryExpression();
+            return new UnarySyntaxExpression(token, syntaxExpression);
         }
         if (token.type() == TokenType.BANG_TOKEN) {
-            Expression expression = parsePrimaryExpression();
-            return new UnaryExpression(token, expression);
+            SyntaxExpression syntaxExpression = parsePrimaryExpression();
+            return new UnarySyntaxExpression(token, syntaxExpression);
         }
         if (token.type() == TokenType.KEYWORD_TRUE_TOKEN || token.type() ==  TokenType.KEYWORD_FALSE_TOKEN) {
-            return new LiteralExpression(token);
+            return new LiteralSyntaxExpression(token);
         }
-        this.diagnostics.addDiagnostic(token.startIndex(), token.endIndex(), "Invalid token: '%s'", token.value());
-        return new LiteralExpression(new Token("", TokenType.NUMBER_TOKEN, token.startIndex(), token.endIndex()));
+        this.diagnostics.addDiagnostic(token, "Invalid token: '%s'", token.value());
+        return new LiteralSyntaxExpression(new Token("", TokenType.NUMBER_TOKEN, token.startIndex(), token.endIndex(), token.lineNumber()));
     }
 
-    private Expression parseBracketExpression() {
-        Expression expression = parseExpression();
+    private SyntaxExpression parseBracketExpression() {
+        SyntaxExpression syntaxExpression = parseExpression();
         Token token = current();
-        if (token.type() != TokenType.CLOSED_BRACKET_TOKEN) {
-            diagnostics.addDiagnostic(token.startIndex(), token.endIndex(), "Expected closing bracket");
+        if (token.type() != TokenType.CLOSED_BRACKET_TOKEN && tokens.get(index - 1).type() != TokenType.CLOSED_BRACKET_TOKEN) {
+            diagnostics.addDiagnostic(token, "Expected closing bracket");
         }
         advance();
-        return expression;
+        return syntaxExpression;
     }
 
     private void advance() {
@@ -174,7 +174,7 @@ public class Parser {
                 break;
             }
             if (token.type() == TokenType.BAD_SYNTAX_TOKEN) {
-                this.diagnostics.addDiagnostic(token.startIndex(), token.endIndex(), "Unrecognized token '%s' at index %d");
+                this.diagnostics.addDiagnostic(token, "Unrecognized token");
             }
         }
     }

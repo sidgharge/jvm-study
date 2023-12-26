@@ -2,11 +2,11 @@ package come.homeproects.jvmstudy.parser.expressions;
 
 import come.homeproects.jvmstudy.parser.lexer.Token;
 
-public record LiteralExpression(Token token) implements Expression {
+public record LiteralSyntaxExpression(Token token) implements SyntaxExpression {
 
     @Override
-    public ExpressionType expressionType() {
-        return ExpressionType.LITERAL;
+    public SyntaxExpressionType expressionType() {
+        return SyntaxExpressionType.LITERAL;
     }
 
     @Override

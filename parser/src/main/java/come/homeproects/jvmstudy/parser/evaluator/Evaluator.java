@@ -4,10 +4,6 @@ import come.homeproects.jvmstudy.parser.bindexpressions.BinaryBoundExpression;
 import come.homeproects.jvmstudy.parser.bindexpressions.BoundExpression;
 import come.homeproects.jvmstudy.parser.bindexpressions.LiteralBoundExpression;
 import come.homeproects.jvmstudy.parser.bindexpressions.UnaryBoundExpression;
-import come.homeproects.jvmstudy.parser.expressions.BinaryExpression;
-import come.homeproects.jvmstudy.parser.expressions.Expression;
-import come.homeproects.jvmstudy.parser.expressions.LiteralExpression;
-import come.homeproects.jvmstudy.parser.expressions.UnaryExpression;
 
 public class Evaluator {
 

@@ -1,22 +1,22 @@
 package come.homeproects.jvmstudy.parser.evaluator;
 
-import come.homeproects.jvmstudy.parser.expressions.BinaryExpression;
-import come.homeproects.jvmstudy.parser.expressions.Expression;
-import come.homeproects.jvmstudy.parser.expressions.LiteralExpression;
-import come.homeproects.jvmstudy.parser.expressions.UnaryExpression;
+import come.homeproects.jvmstudy.parser.expressions.BinarySyntaxExpression;
+import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
+import come.homeproects.jvmstudy.parser.expressions.LiteralSyntaxExpression;
+import come.homeproects.jvmstudy.parser.expressions.UnarySyntaxExpression;
 
 public class Evaluator2 {
 
-    public Object evaluate(Expression expression) {
-        return switch (expression) {
-            case BinaryExpression binaryExpression -> binaryExpression(binaryExpression);
-            case UnaryExpression unaryExpression -> unaryExpression(unaryExpression);
-            case LiteralExpression literalExpression -> literalExpression(literalExpression);
-            default -> throw new RuntimeException("Unhandled expression type " + expression.expressionType());
+    public Object evaluate(SyntaxExpression syntaxExpression) {
+        return switch (syntaxExpression) {
+            case BinarySyntaxExpression binaryExpression -> binaryExpression(binaryExpression);
+            case UnarySyntaxExpression unaryExpression -> unaryExpression(unaryExpression);
+            case LiteralSyntaxExpression literalExpression -> literalExpression(literalExpression);
+            default -> throw new RuntimeException("Unhandled expression type " + syntaxExpression.expressionType());
         };
     }
 
-    private Object literalExpression(LiteralExpression literalExpression) {
+    private Object literalExpression(LiteralSyntaxExpression literalExpression) {
         return switch (literalExpression.token().type()) {
             case KEYWORD_TRUE_TOKEN -> true;
             case KEYWORD_FALSE_TOKEN -> false;
@@ -25,16 +25,16 @@ public class Evaluator2 {
         };
     }
 
-    private Object unaryExpression(UnaryExpression unaryExpression) {
+    private Object unaryExpression(UnarySyntaxExpression unaryExpression) {
         return switch (unaryExpression.operator().type()) {
-            case PLUS_TOKEN -> (int)evaluate(unaryExpression.expression());
-            case MINUS_TOKEN -> -(int)evaluate(unaryExpression.expression());
-            case BANG_TOKEN -> !(boolean)evaluate(unaryExpression.expression());
+            case PLUS_TOKEN -> (int)evaluate(unaryExpression.syntaxExpression());
+            case MINUS_TOKEN -> -(int)evaluate(unaryExpression.syntaxExpression());
+            case BANG_TOKEN -> !(boolean)evaluate(unaryExpression.syntaxExpression());
             default -> throw new RuntimeException("Invalid unary operator at index: " + unaryExpression.operator().startIndex());
         };
     }
 
-    private Object binaryExpression(BinaryExpression binaryExpression) {
+    private Object binaryExpression(BinarySyntaxExpression binaryExpression) {
         return switch (binaryExpression.token().type()) {
             case PLUS_TOKEN -> (int)evaluate(binaryExpression.left()) + (int)evaluate(binaryExpression.right());
             case MINUS_TOKEN -> (int)evaluate(binaryExpression.left()) - (int)evaluate(binaryExpression.right());

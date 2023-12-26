@@ -3,8 +3,7 @@ package come.homeproects.jvmstudy.parser;
 import come.homeproects.jvmstudy.parser.bindexpressions.Binder;
 import come.homeproects.jvmstudy.parser.bindexpressions.BoundExpression;
 import come.homeproects.jvmstudy.parser.evaluator.Evaluator;
-import come.homeproects.jvmstudy.parser.evaluator.Evaluator2;
-import come.homeproects.jvmstudy.parser.expressions.Expression;
+import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
 
 public class CommandLineCalculator {
 
@@ -14,7 +13,7 @@ public class CommandLineCalculator {
 
     public Object evaluateToObject(String expression) {
         Parser parser = new Parser(expression, false);
-        Expression exp = parser.parse();
+        SyntaxExpression exp = parser.parse();
         BoundExpression bind = new Binder().bind(exp);
         return new Evaluator().evaluate(bind);
     }
@@ -22,7 +21,11 @@ public class CommandLineCalculator {
     public static void main(String[] args) {
 //        String expression = "4 - 1 + 5";
 
-        String expression = "1 + 5 * 6";
+        String expression = """
+                
+                ab == 10
+                """;
+        System.out.println(expression);
 
 //        System.out.println(new Evaluator2().evaluate(new Parser(expression, true).parse()));
 
@@ -30,7 +33,7 @@ public class CommandLineCalculator {
         BoundExpression boundExpression = binder.bind(expression);
         if (binder.diagnostics().hasErrors()) {
             binder.diagnostics().errors().forEach(System.err::println);
-            System.out.println(new Evaluator().evaluate(boundExpression));
+//            System.out.println(new Evaluator().evaluate(boundExpression));
             return;
         }
         System.out.println(new Evaluator().evaluate(boundExpression));

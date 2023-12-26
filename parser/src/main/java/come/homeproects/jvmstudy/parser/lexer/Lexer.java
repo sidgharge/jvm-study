@@ -1,5 +1,7 @@
 package come.homeproects.jvmstudy.parser.lexer;
 
+import come.homeproects.jvmstudy.parser.SourceText;
+
 import static java.lang.Character.isAlphabetic;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isWhitespace;
@@ -8,24 +10,21 @@ public class Lexer {
     
     private static final char NULL_CHAR = '\0';
 
-    private final String expression;
-
-    private int index;
+    private final SourceText text;
 
     public Lexer(String expression) {
-        this.expression = expression;
-        this.index = 0;
+        this.text = new SourceText(expression);
     }
 
     public Token nextToken() {
-        char ch = peek();
+        char ch = text.peek();
         
         if (isWhitespace(ch)) {
             return tokenAfterWhiteSpace();
         }
         
         if (ch == NULL_CHAR) {
-            return new Token(String.valueOf(NULL_CHAR), TokenType.END_OF_FILE_TOKEN, index, index);
+            return singleCharacterToken(String.valueOf(NULL_CHAR), TokenType.END_OF_FILE_TOKEN);
         }
         
         if (isDigit(ch)) {
@@ -46,10 +45,10 @@ public class Lexer {
         }
 
         if (ch == '(') {
-            return new Token("(", TokenType.OPEN_BRACKET_TOKEN, index, index++);
+            return singleCharacterToken("(", TokenType.OPEN_BRACKET_TOKEN);
         }
         if (ch == ')') {
-            return new Token(")", TokenType.CLOSED_BRACKET_TOKEN, index, index++);
+            return singleCharacterToken(")", TokenType.CLOSED_BRACKET_TOKEN);
         }
 
         if (ch == '&' || ch == '|') {
@@ -64,44 +63,54 @@ public class Lexer {
             return wordToken();
         }
 
+        return singleCharacterToken(String.valueOf(ch), TokenType.BAD_SYNTAX_TOKEN);
+    }
 
-
-        Token token = new Token(String.valueOf(ch), TokenType.BAD_SYNTAX_TOKEN, index, index);
-        currentAndAdvance();
+    private Token singleCharacterToken(String value, TokenType type) {
+        Token token = new Token(value, type, text.index(), text.index(), text.lineNumber());
+        text.currentAndAdvance();
         return token;
     }
 
     private Token bangOrEqualsRelatedOperator() {
-        char ch1 = currentAndAdvance();
-        char ch2 = currentAndAdvance();
+        int lineNumber = text.lineNumber();
+        int startIndex = text.index();
+        char ch1 = text.currentAndAdvance();
+        char ch2 = text.peek();
         if (ch1 == '=' && ch2 == '=') {
-            return new Token("==", TokenType.DOUBLE_EQUALS_TOKEN, index - 1, index++);
+            text.currentAndAdvance();
+            return new Token("==", TokenType.DOUBLE_EQUALS_TOKEN, text.index() - 1, text.index(), lineNumber);
         }
         if (ch1 == '!' && ch2 == '=') {
-            return new Token("!=", TokenType.BANG_EQUALS_TOKEN, index - 1, index++);
+            text.currentAndAdvance();
+            return new Token("!=", TokenType.BANG_EQUALS_TOKEN, text.index() - 1, text.index(), lineNumber);
         }
         if (ch1 == '!' && ch2 != '=') {
-            index--;
-            return new Token("!", TokenType.BANG_TOKEN, index - 1, index - 1);
+            return new Token("!", TokenType.BANG_TOKEN, startIndex, startIndex, text.lineNumber());
         }
-        return new Token("", TokenType.BAD_SYNTAX_TOKEN, index - 1, index++);
+        return new Token("", TokenType.BAD_SYNTAX_TOKEN, startIndex, startIndex, lineNumber);
     }
 
     private Token logicalOperator() {
-        if (peek() == '&' && currentAndAdvance() == '&') {
-            return new Token("&&", TokenType.DOUBLE_AMPERSAND_TOKEN, index - 1, index++);
+        int lineNumber = text.lineNumber();
+        int startIndex = text.index();
+        if (text.peek() == '&' && text.currentAndAdvance() == '&') {
+            text.currentAndAdvance();
+            return new Token("&&", TokenType.DOUBLE_AMPERSAND_TOKEN, startIndex, startIndex + 1, lineNumber);
         }
-        if (peek() == '|' && currentAndAdvance() == '|') {
-            return new Token("||", TokenType.DOUBLE_PIPE_TOKEN, index - 1, index++);
+        if (text.peek() == '|' && text.currentAndAdvance() == '|') {
+            text.currentAndAdvance();
+            return new Token("||", TokenType.DOUBLE_PIPE_TOKEN, startIndex, startIndex + 1, lineNumber);
         }
-        return new Token("", TokenType.BAD_SYNTAX_TOKEN, index, index++);
+        return new Token("", TokenType.BAD_SYNTAX_TOKEN, startIndex, startIndex + 1, lineNumber);
     }
 
     private Token wordToken() {
-        int start = index;
+        int start = text.index();
+        int lineNumber = text.lineNumber();
         StringBuilder builder = new StringBuilder();
-        while (!isAtEnd()) {
-            char ch = peek();
+        while (!text.isAtEnd()) {
+            char ch = text.peek();
             if (ch == NULL_CHAR) {
                 break;
             }
@@ -109,44 +118,34 @@ public class Lexer {
                 break;
             }
             builder.append(ch);
-            index++;
+            text.currentAndAdvance();
         }
         String value = builder.toString();
         TokenType tokenType = Grammar.getWordTokenType(value);
-        return new Token(value, tokenType, start, index - 1);
+        return new Token(value, tokenType, start, text.index() - 1, lineNumber);
     }
 
     private Token operatorToken(char value, TokenType tokenType) {
-        Token token = new Token(String.valueOf(value), tokenType, index, index);
-        currentAndAdvance();
+        Token token = new Token(String.valueOf(value), tokenType, text.index(), text.index(), text.lineNumber());
+        text.currentAndAdvance();
         return token;
     }
 
     private Token numberToken() {
-        int startIndex = index;
+        int startIndex = text.index();
+        int lineNumber = text.lineNumber();
         StringBuilder builder = new StringBuilder();
-        while (isDigit(peek())) {
-            builder.append(currentAndAdvance());
+        while (isDigit(text.peek())) {
+            builder.append(text.currentAndAdvance());
         }
-        return new Token(builder.toString(), TokenType.NUMBER_TOKEN, startIndex, index - 1);
+        return new Token(builder.toString(), TokenType.NUMBER_TOKEN, startIndex, text.index() - 1, lineNumber);
     }
 
     private Token tokenAfterWhiteSpace() {
-        while (isWhitespace(peek())) {
-            currentAndAdvance();
+        while (isWhitespace(text.peek())) {
+            text.currentAndAdvance();
         }
         return nextToken();
     }
 
-    private boolean isAtEnd() {
-        return index >= expression.length();
-    }
-    
-    private char peek() {
-        return isAtEnd() ? NULL_CHAR : expression.charAt(index);
-    }
-
-    private char currentAndAdvance() {
-        return isAtEnd() ? NULL_CHAR : expression.charAt(index++);
-    }
 }
