@@ -52,6 +52,9 @@ public class Parser {
         if (this.diagnostics.hasErrors()) {
             printErrors();
         }
+        if (debug) {
+            System.out.println(syntaxExpression);
+        }
         return syntaxExpression;
     }
 
@@ -105,9 +108,10 @@ public class Parser {
             SyntaxExpression syntaxExpression = parsePrimaryExpression();
             return new UnarySyntaxExpression(token, syntaxExpression);
         }
-        if (token.type() == TokenType.KEYWORD_TRUE_TOKEN || token.type() ==  TokenType.KEYWORD_FALSE_TOKEN) {
+        if (token.type() == TokenType.KEYWORD_TRUE_TOKEN || token.type() ==  TokenType.KEYWORD_FALSE_TOKEN || token.type() == TokenType.IDENTIFIER_TOKEN) {
             return new LiteralSyntaxExpression(token);
         }
+
         this.diagnostics.addDiagnostic(token, "Invalid token: '%s'", token.value());
         return new LiteralSyntaxExpression(new Token("", TokenType.NUMBER_TOKEN, token.startIndex(), token.endIndex(), token.lineNumber()));
     }

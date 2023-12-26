@@ -2,5 +2,8 @@ package come.homeproects.jvmstudy.parser.expressions;
 
 public enum SyntaxExpressionType {
 
-    BINARY_EXPRESSION, LITERAL, UNARY
+    LITERAL_EXPRESSION,
+    UNARY_EXPRESSION,
+    BINARY_EXPRESSION,
+    ASSIGNMENT_EXPRESSION,
 }

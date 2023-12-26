@@ -6,7 +6,7 @@ public record LiteralSyntaxExpression(Token token) implements SyntaxExpression {
 
     @Override
     public SyntaxExpressionType expressionType() {
-        return SyntaxExpressionType.LITERAL;
+        return SyntaxExpressionType.LITERAL_EXPRESSION;
     }
 
     @Override

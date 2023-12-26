@@ -88,7 +88,10 @@ public class Lexer {
         if (ch1 == '!' && ch2 != '=') {
             return new Token("!", TokenType.BANG_TOKEN, startIndex, startIndex, text.lineNumber());
         }
-        return new Token("", TokenType.BAD_SYNTAX_TOKEN, startIndex, startIndex, lineNumber);
+        if (ch1 == '=' && ch2 != '=') {
+            return new Token("=", TokenType.EQUALS_TOKEN, startIndex, startIndex, text.lineNumber());
+        }
+        return new Token(String.valueOf(ch1), TokenType.BAD_SYNTAX_TOKEN, startIndex, startIndex, lineNumber);
     }
 
     private Token logicalOperator() {

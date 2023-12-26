@@ -4,8 +4,14 @@ import come.homeproects.jvmstudy.parser.bindexpressions.BinaryBoundExpression;
 import come.homeproects.jvmstudy.parser.bindexpressions.BoundExpression;
 import come.homeproects.jvmstudy.parser.bindexpressions.LiteralBoundExpression;
 import come.homeproects.jvmstudy.parser.bindexpressions.UnaryBoundExpression;
+import come.homeproects.jvmstudy.parser.lexer.TokenType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Evaluator {
+
+    Map<String, Object> variables = new HashMap<>();
 
     public Object evaluate(BoundExpression expression) {
         return switch (expression) {
@@ -21,6 +27,7 @@ public class Evaluator {
             case KEYWORD_TRUE_TOKEN -> true;
             case KEYWORD_FALSE_TOKEN -> false;
             case NUMBER_TOKEN -> Integer.parseInt(literalExpression.token().value());
+            case IDENTIFIER_TOKEN -> variables.getOrDefault(literalExpression.token().value(), null);
             default -> throw new RuntimeException("Unhandled keyword " + literalExpression.token().value());
         };
     }
@@ -44,7 +51,18 @@ public class Evaluator {
             case DOUBLE_PIPE_TOKEN -> (boolean)evaluate(binaryExpression.left()) || (boolean)evaluate(binaryExpression.right());
             case DOUBLE_EQUALS_TOKEN -> evaluate(binaryExpression.left()).equals(evaluate(binaryExpression.right()));
             case BANG_EQUALS_TOKEN -> !evaluate(binaryExpression.left()).equals(evaluate(binaryExpression.right()));
-            default -> throw new RuntimeException("Unknown token");
+            case EQUALS_TOKEN -> assignmentEvaluation(binaryExpression);
+            default -> throw new RuntimeException("Unknown token: " + binaryExpression.operatorToken());
         };
+    }
+
+    private Object assignmentEvaluation(BinaryBoundExpression binaryExpression) {
+        if (!(binaryExpression.left() instanceof LiteralBoundExpression) || !((LiteralBoundExpression) binaryExpression.left()).token().type().equals(TokenType.IDENTIFIER_TOKEN)) {
+            throw new RuntimeException("Left side of assignment is not a variable");
+        }
+        Object result = evaluate(binaryExpression.right());
+        String variableName = ((LiteralBoundExpression) binaryExpression.left()).token().value();
+        variables.put(variableName, result);
+        return result;
     }
 }

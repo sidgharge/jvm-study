@@ -7,15 +7,21 @@ import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
 import come.homeproects.jvmstudy.parser.expressions.LiteralSyntaxExpression;
 import come.homeproects.jvmstudy.parser.expressions.UnarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.lexer.Token;
+import come.homeproects.jvmstudy.parser.lexer.TokenType;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Binder {
 
     private final Diagnostics diagnostics;
 
+    private final Map<String, Type> types;
+
     public Binder() {
         diagnostics = new Diagnostics();
+        types = new HashMap<>();
     }
 
     public BoundExpression bind(String inputExpression) {
@@ -43,6 +49,9 @@ public class Binder {
     }
 
     private BinaryBoundExpression binaryExpression(BinarySyntaxExpression binaryExpression) {
+        if (isVariableAssignment(binaryExpression)) {
+            return variableAssignmentSyntaxExpression(binaryExpression);
+        }
         BoundExpression left = bind(binaryExpression.left());
         BoundExpression right = bind(binaryExpression.right());
         Token operatorToken = binaryExpression.token();
@@ -59,8 +68,21 @@ public class Binder {
         if (binaryExpression.token().type().isLogicalOperatorToken()) {
             return new BinaryBoundExpression(left, right, binaryExpression.token(), boolean.class);
         }
-
         diagnostics.addDiagnostic(operatorToken, "Operand '%s' is not implemented to use with '%s' and '%s'", binaryExpression.token().value(), left.type(), right.type());
+        return new BinaryBoundExpression(left, right, binaryExpression.token(), left.type());
+    }
+
+    private boolean isVariableAssignment(BinarySyntaxExpression binaryExpression) {
+        return binaryExpression.token().type().equals(TokenType.EQUALS_TOKEN)
+                && binaryExpression.left() instanceof LiteralSyntaxExpression
+                && ((LiteralSyntaxExpression)binaryExpression.left()).token().type().equals(TokenType.IDENTIFIER_TOKEN);
+    }
+
+    private BinaryBoundExpression variableAssignmentSyntaxExpression(BinarySyntaxExpression binaryExpression) {
+        BoundExpression right = bind(binaryExpression.right());
+        Token token = ((LiteralSyntaxExpression) binaryExpression.left()).token();
+        LiteralBoundExpression left = new LiteralBoundExpression(token, right.type());
+        types.put(token.value(), left.type());
         return new BinaryBoundExpression(left, right, binaryExpression.token(), left.type());
     }
 
@@ -88,6 +110,7 @@ public class Binder {
         Type type =  switch (token.type()) {
             case NUMBER_TOKEN -> int.class;
             case KEYWORD_TRUE_TOKEN, KEYWORD_FALSE_TOKEN -> boolean.class;
+            case IDENTIFIER_TOKEN -> types.getOrDefault(token.value(), Object.class);
             default -> null;
         };
         if (type == null) {

@@ -26,7 +26,8 @@ public class TokenPrecedence {
         precedences.put(TokenType.DOUBLE_PIPE_TOKEN, i++);
 
         precedences.put(TokenType.START_TOKEN, i);
-        precedences.put(TokenType.SLASH_TOKEN, i++);
+        precedences.put(TokenType.SLASH_TOKEN, i);
+        precedences.put(TokenType.EQUALS_TOKEN, i++);
 
 
         precedences.put(TokenType.END_OF_FILE_TOKEN, -1);

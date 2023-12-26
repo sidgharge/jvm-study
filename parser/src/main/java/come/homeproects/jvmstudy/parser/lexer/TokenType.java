@@ -12,6 +12,7 @@ public enum TokenType {
     CLOSED_BRACKET_TOKEN,
     END_OF_FILE_TOKEN,
     BAD_SYNTAX_TOKEN,
+    IDENTIFIER_TOKEN,
 
     // Operators
     PLUS_TOKEN,
@@ -22,7 +23,8 @@ public enum TokenType {
     DOUBLE_PIPE_TOKEN,
     DOUBLE_EQUALS_TOKEN,
     BANG_EQUALS_TOKEN,
-    BANG_TOKEN;
+    BANG_TOKEN,
+    EQUALS_TOKEN;
 
     public boolean isMathematicalOperatorToken() {
         return this == PLUS_TOKEN ||
@@ -33,6 +35,8 @@ public enum TokenType {
 
     public boolean isLogicalOperatorToken() {
         return this == DOUBLE_EQUALS_TOKEN ||
-                this == BANG_EQUALS_TOKEN;
+                this == BANG_EQUALS_TOKEN ||
+                this == DOUBLE_PIPE_TOKEN ||
+                this == DOUBLE_AMPERSAND_TOKEN;
     }
 }
