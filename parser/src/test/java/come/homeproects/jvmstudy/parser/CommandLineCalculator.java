@@ -21,16 +21,16 @@ public class CommandLineCalculator {
     }
 
     public static void main(String[] args) {
-        repl();
-//        test();
+//        repl();
+        test();
     }
 
     public static void test() {
 //        String expression = "4 - 1 + 5";
 
         String expression = """
-
-                ab = 10
+                (ab = (8 + 2) == (9 + 1))
+                && false
                 """;
 //        System.out.println(expression);
 

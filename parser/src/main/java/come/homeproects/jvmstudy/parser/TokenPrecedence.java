@@ -16,6 +16,7 @@ public class TokenPrecedence {
 
 //        precedences.put(TokenType.NUMBER_TOKEN, i);
         precedences.put(TokenType.CLOSED_BRACKET_TOKEN, i++);
+        precedences.put(TokenType.EQUALS_TOKEN, i++);
 
         precedences.put(TokenType.DOUBLE_EQUALS_TOKEN, i);
         precedences.put(TokenType.BANG_EQUALS_TOKEN, i++);
@@ -26,9 +27,7 @@ public class TokenPrecedence {
         precedences.put(TokenType.DOUBLE_PIPE_TOKEN, i++);
 
         precedences.put(TokenType.START_TOKEN, i);
-        precedences.put(TokenType.SLASH_TOKEN, i);
-        precedences.put(TokenType.EQUALS_TOKEN, i++);
-
+        precedences.put(TokenType.SLASH_TOKEN, i++);
 
         precedences.put(TokenType.END_OF_FILE_TOKEN, -1);
         precedences.put(TokenType.BAD_SYNTAX_TOKEN, -1);
