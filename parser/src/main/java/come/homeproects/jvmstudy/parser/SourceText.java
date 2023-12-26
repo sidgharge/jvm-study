@@ -13,10 +13,7 @@ public class SourceText {
     private int lineNumber = 0;
 
     public SourceText(String source) {
-        this.lines = source.lines().toList();
-        while (lineNumber < this.lines.size() && this.lines.get(lineNumber).isEmpty()) {
-            lineNumber++;
-        }
+        this.lines = source.lines().map(str -> str.concat("\n")).toList();
     }
 
     public char peek() {

@@ -23,7 +23,7 @@ public class CommandLineCalculator {
 
         String expression = """
                 
-                ab == 10
+                10 + ab
                 """;
         System.out.println(expression);
 

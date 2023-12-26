@@ -173,9 +173,6 @@ public class Parser {
             if (token.type() == TokenType.END_OF_FILE_TOKEN) {
                 break;
             }
-            if (token.type() == TokenType.BAD_SYNTAX_TOKEN) {
-                this.diagnostics.addDiagnostic(token, "Unrecognized token");
-            }
         }
     }
 
