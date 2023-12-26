@@ -29,8 +29,7 @@ public class CommandLineCalculator {
 //        String expression = "4 - 1 + 5";
 
         String expression = """
-                (ab = (8 + 2) == (9 + 1))
-                && false
+                1 ) + 2)
                 """;
 //        System.out.println(expression);
 
@@ -50,9 +49,14 @@ public class CommandLineCalculator {
         boolean debug = false;
         Binder binder = new Binder();
         Evaluator evaluator = new Evaluator();
+        StringBuilder builder = new StringBuilder();
         try(Scanner scanner = new Scanner(System.in)) {
             while (true) {
-                System.out.print(">> ");
+                if (builder.isEmpty()) {
+                    System.out.print(">> ");
+                } else {
+//                    System.out.print("| ");
+                }
                 String line = scanner.nextLine();
                 if (line.equals("q")) {
                     break;
@@ -62,13 +66,21 @@ public class CommandLineCalculator {
                     System.out.println("debug = " + debug);
                     continue;
                 }
+                if (!line.isEmpty()) {
+                    builder.append(line);
+                    continue;
+                }
+
+                line = builder.toString();
+                builder = new StringBuilder();
 
                 BoundExpression boundExpression = binder.bind(line, debug);
                 if (binder.diagnostics().hasErrors()) {
                     binder.diagnostics().errors().forEach(System.err::println);
-                    return;
+
+                } else {
+                    System.out.println("=> " + evaluator.evaluate(boundExpression));
                 }
-                System.out.println(evaluator.evaluate(boundExpression));
             }
         }
     }
