@@ -1,5 +1,12 @@
-package come.homeproects.jvmstudy.parser.bindexpressions;
+package come.homeproects.jvmstudy.parser.binder;
 
+import come.homeproects.jvmstudy.parser.binder.expressions.BinaryBoundExpression;
+import come.homeproects.jvmstudy.parser.binder.expressions.BoundExpression;
+import come.homeproects.jvmstudy.parser.binder.expressions.LiteralBoundExpression;
+import come.homeproects.jvmstudy.parser.binder.expressions.UnaryBoundExpression;
+import come.homeproects.jvmstudy.parser.binder.statements.BlockBoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
 import come.homeproects.jvmstudy.parser.diagnostics.Diagnostics;
 import come.homeproects.jvmstudy.parser.Parser;
 import come.homeproects.jvmstudy.parser.expressions.BinarySyntaxExpression;
@@ -8,9 +15,14 @@ import come.homeproects.jvmstudy.parser.expressions.LiteralSyntaxExpression;
 import come.homeproects.jvmstudy.parser.expressions.UnarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.lexer.Token;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
+import come.homeproects.jvmstudy.parser.statements.BlockSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.SyntaxStatement;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Binder {
@@ -24,19 +36,37 @@ public class Binder {
         types = new HashMap<>();
     }
 
-    public BoundExpression bind(String inputExpression) {
+    public BoundStatement bind(String inputExpression) {
         return bind(inputExpression, false);
     }
 
-    public BoundExpression bind(String inputExpression, boolean debug) {
+    public BoundStatement bind(String inputExpression, boolean debug) {
         Parser parser = new Parser(inputExpression, debug);
-        SyntaxExpression syntaxExpression = parser.parse();
+        SyntaxStatement statement = parser.parse();
         parser.diagnostics().errors().forEach(diagnostics::add);
-        return bind(syntaxExpression);
+        return bind(statement);
     }
 
-    public Diagnostics diagnostics() {
-        return diagnostics;
+    private BoundStatement bind(SyntaxStatement statement) {
+        return switch (statement) {
+            case BlockSyntaxStatement blockSyntaxStatement -> blockSyntaxStatement(blockSyntaxStatement);
+            case ExpressionSyntaxStatement expressionSyntaxStatement -> expressionSyntaxStatement(expressionSyntaxStatement);
+            default -> throw new RuntimeException("Unhandled statement type: " + statement.statementType());
+        };
+    }
+
+    private ExpressionBoundStatement expressionSyntaxStatement(ExpressionSyntaxStatement expressionSyntaxStatement) {
+        BoundExpression expression = bind(expressionSyntaxStatement.expression());
+        return new ExpressionBoundStatement(expression);
+    }
+
+    private BlockBoundStatement blockSyntaxStatement(BlockSyntaxStatement blockSyntaxStatement) {
+        List<BoundStatement> statements = new ArrayList<>();
+        for (SyntaxStatement statement: blockSyntaxStatement.statements()) {
+            BoundStatement boundStatement = bind(statement);
+            statements.add(boundStatement);
+        }
+        return new BlockBoundStatement(blockSyntaxStatement.openBracket(), blockSyntaxStatement.closedBracket(), statements);
     }
 
     public BoundExpression bind(SyntaxExpression syntaxExpression) {
@@ -117,5 +147,9 @@ public class Binder {
             this.diagnostics.addDiagnostic(token, "Unknown syntax '%s' at index %d", token.value(), token.startIndex());
         }
         return new LiteralBoundExpression(token, type);
+    }
+
+    public Diagnostics diagnostics() {
+        return diagnostics;
     }
 }

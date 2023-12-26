@@ -24,7 +24,11 @@ public enum TokenType {
     DOUBLE_EQUALS_TOKEN,
     BANG_EQUALS_TOKEN,
     BANG_TOKEN,
-    EQUALS_TOKEN;
+    EQUALS_TOKEN,
+
+    // Statement
+    OPEN_CURLY_BRACKET_TOKEN,
+    CLOSED_CURLY_BRACKET_TOKEN;
 
     public boolean isMathematicalOperatorToken() {
         return this == PLUS_TOKEN ||

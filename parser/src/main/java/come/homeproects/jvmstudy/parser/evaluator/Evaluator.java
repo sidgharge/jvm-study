@@ -1,9 +1,12 @@
 package come.homeproects.jvmstudy.parser.evaluator;
 
-import come.homeproects.jvmstudy.parser.bindexpressions.BinaryBoundExpression;
-import come.homeproects.jvmstudy.parser.bindexpressions.BoundExpression;
-import come.homeproects.jvmstudy.parser.bindexpressions.LiteralBoundExpression;
-import come.homeproects.jvmstudy.parser.bindexpressions.UnaryBoundExpression;
+import come.homeproects.jvmstudy.parser.binder.expressions.BinaryBoundExpression;
+import come.homeproects.jvmstudy.parser.binder.expressions.BoundExpression;
+import come.homeproects.jvmstudy.parser.binder.expressions.LiteralBoundExpression;
+import come.homeproects.jvmstudy.parser.binder.expressions.UnaryBoundExpression;
+import come.homeproects.jvmstudy.parser.binder.statements.BlockBoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
 
 import java.util.HashMap;
@@ -12,6 +15,27 @@ import java.util.Map;
 public class Evaluator {
 
     Map<String, Object> variables = new HashMap<>();
+
+    private Object lastValue;
+
+    public Object evaluate(BoundStatement statement) {
+        switch (statement) {
+            case ExpressionBoundStatement expressionBoundStatement -> expressionBoundStatement(expressionBoundStatement);
+            case BlockBoundStatement blockBoundStatement -> blockBoundStatement(blockBoundStatement);
+            default -> throw new RuntimeException("Unhandled statement type: " + statement.getClass());
+        }
+        return lastValue;
+    }
+
+    private void blockBoundStatement(BlockBoundStatement blockBoundStatement) {
+        for (BoundStatement statement : blockBoundStatement.statements()) {
+            evaluate(statement);
+        }
+    }
+
+    private void expressionBoundStatement(ExpressionBoundStatement expressionBoundStatement) {
+        lastValue = evaluate(expressionBoundStatement.expression());
+    }
 
     public Object evaluate(BoundExpression expression) {
         return switch (expression) {

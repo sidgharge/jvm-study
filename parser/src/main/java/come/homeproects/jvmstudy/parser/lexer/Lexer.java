@@ -32,16 +32,16 @@ public class Lexer {
         }
         
         if (ch == '+') {
-            return operatorToken('+', TokenType.PLUS_TOKEN);
+            return singleCharacterToken("+", TokenType.PLUS_TOKEN);
         }
         if (ch == '-') {
-            return operatorToken('-', TokenType.MINUS_TOKEN);
+            return singleCharacterToken("-", TokenType.MINUS_TOKEN);
         }
         if (ch == '*') {
-            return operatorToken('*', TokenType.START_TOKEN);
+            return singleCharacterToken("*", TokenType.START_TOKEN);
         }
         if (ch == '/') {
-            return operatorToken('/', TokenType.SLASH_TOKEN);
+            return singleCharacterToken("/", TokenType.SLASH_TOKEN);
         }
 
         if (ch == '(') {
@@ -49,6 +49,12 @@ public class Lexer {
         }
         if (ch == ')') {
             return singleCharacterToken(")", TokenType.CLOSED_BRACKET_TOKEN);
+        }
+        if (ch == '{') {
+            return singleCharacterToken("{", TokenType.OPEN_CURLY_BRACKET_TOKEN);
+        }
+        if (ch == '}') {
+            return singleCharacterToken("}", TokenType.CLOSED_CURLY_BRACKET_TOKEN);
         }
 
         if (ch == '&' || ch == '|') {
@@ -126,12 +132,6 @@ public class Lexer {
         String value = builder.toString();
         TokenType tokenType = Grammar.getWordTokenType(value);
         return new Token(value, tokenType, start, text.index() - 1, lineNumber);
-    }
-
-    private Token operatorToken(char value, TokenType tokenType) {
-        Token token = new Token(String.valueOf(value), tokenType, text.index(), text.index(), text.lineNumber());
-        text.currentAndAdvance();
-        return token;
     }
 
     private Token numberToken() {

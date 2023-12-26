@@ -1,7 +1,8 @@
 package come.homeproects.jvmstudy.parser;
 
-import come.homeproects.jvmstudy.parser.bindexpressions.Binder;
-import come.homeproects.jvmstudy.parser.bindexpressions.BoundExpression;
+import come.homeproects.jvmstudy.parser.binder.Binder;
+import come.homeproects.jvmstudy.parser.binder.expressions.BoundExpression;
+import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
 import come.homeproects.jvmstudy.parser.evaluator.Evaluator;
 import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
 
@@ -14,10 +15,8 @@ public class CommandLineCalculator {
     }
 
     public Object evaluateToObject(String expression) {
-        Parser parser = new Parser(expression, false);
-        SyntaxExpression exp = parser.parse();
-        BoundExpression bind = new Binder().bind(exp);
-        return new Evaluator().evaluate(bind);
+        BoundStatement boundStatement = new Binder().bind(expression, false);
+        return new Evaluator().evaluate(boundStatement);
     }
 
     public static void main(String[] args) {
@@ -26,23 +25,26 @@ public class CommandLineCalculator {
     }
 
     public static void test() {
-//        String expression = "4 - 1 + 5";
+//        String expression = "2 *(3 + 4 * (5 + 6))";
 
         String expression = """
-                1 ) + 2)
+                {
+                    a = 10
+                    b = 12
+                }
                 """;
 //        System.out.println(expression);
 
 //        System.out.println(new Evaluator2().evaluate(new Parser(expression, true).parse()));
 
         Binder binder = new Binder();
-        BoundExpression boundExpression = binder.bind(expression, true);
+        BoundStatement statement = binder.bind(expression, true);
         if (binder.diagnostics().hasErrors()) {
             binder.diagnostics().errors().forEach(System.err::println);
 //            System.out.println(new Evaluator().evaluate(boundExpression));
             return;
         }
-        System.out.println(new Evaluator().evaluate(boundExpression));
+        System.out.println(new Evaluator().evaluate(statement));
     }
 
     public static void repl() {
@@ -74,12 +76,12 @@ public class CommandLineCalculator {
                 line = builder.toString();
                 builder = new StringBuilder();
 
-                BoundExpression boundExpression = binder.bind(line, debug);
+                BoundStatement statement = binder.bind(line, debug);
                 if (binder.diagnostics().hasErrors()) {
                     binder.diagnostics().errors().forEach(System.err::println);
 
                 } else {
-                    System.out.println("=> " + evaluator.evaluate(boundExpression));
+                    System.out.println("=> " + evaluator.evaluate(statement));
                 }
             }
         }

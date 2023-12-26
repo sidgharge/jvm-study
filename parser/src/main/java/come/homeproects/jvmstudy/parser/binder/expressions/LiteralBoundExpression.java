@@ -1,4 +1,4 @@
-package come.homeproects.jvmstudy.parser.bindexpressions;
+package come.homeproects.jvmstudy.parser.binder.expressions;
 
 import come.homeproects.jvmstudy.parser.lexer.Token;
 

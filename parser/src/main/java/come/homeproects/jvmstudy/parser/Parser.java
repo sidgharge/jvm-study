@@ -5,6 +5,9 @@ import come.homeproects.jvmstudy.parser.diagnostics.Diagnostics;
 import come.homeproects.jvmstudy.parser.expressions.BinarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
 import come.homeproects.jvmstudy.parser.expressions.LiteralSyntaxExpression;
+import come.homeproects.jvmstudy.parser.statements.BlockSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.SyntaxStatement;
 import come.homeproects.jvmstudy.parser.expressions.UnarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.lexer.Lexer;
 import come.homeproects.jvmstudy.parser.lexer.Token;
@@ -41,21 +44,48 @@ public class Parser {
     }
 
 
-    public SyntaxExpression parse() {
+    public SyntaxStatement parse() {
         tokenize();
         if (this.diagnostics.hasErrors()) {
             printErrors();
         }
         printTokens();
 
-        SyntaxExpression syntaxExpression = parseExpression();
+        SyntaxStatement statement = parseStatement();
         if (this.diagnostics.hasErrors()) {
             printErrors();
         }
         if (debug) {
-            System.out.println(syntaxExpression);
+            System.out.println(statement.printString(0));
         }
-        return syntaxExpression;
+        return statement;
+    }
+
+    public SyntaxStatement parseStatement() {
+        Token token = current();
+        return switch (token.type()) {
+            case TokenType.OPEN_CURLY_BRACKET_TOKEN -> parseBlockStatement();
+            default -> parseExpressionStatement();
+        };
+    }
+
+    private ExpressionSyntaxStatement parseExpressionStatement() {
+        SyntaxExpression expression = parseExpression();
+        return new ExpressionSyntaxStatement(expression);
+    }
+
+    private BlockSyntaxStatement parseBlockStatement() {
+        Token openCurlyBracketToken = current();
+        List<SyntaxStatement> statements = new ArrayList<>();
+        advance();
+        Token token = current();
+        while (!token.type().equals(TokenType.CLOSED_CURLY_BRACKET_TOKEN)) {
+            SyntaxStatement statement = parseStatement();
+            statements.add(statement);
+            token = current();
+        }
+        advance();
+        return new BlockSyntaxStatement(openCurlyBracketToken, token, statements);
     }
 
     private SyntaxExpression parseExpression() {

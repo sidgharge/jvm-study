@@ -15,7 +15,10 @@ public class TokenPrecedence {
         precedences = new HashMap<>();
 
 //        precedences.put(TokenType.NUMBER_TOKEN, i);
-        precedences.put(TokenType.CLOSED_BRACKET_TOKEN, i++);
+        precedences.put(TokenType.CLOSED_BRACKET_TOKEN, i);
+        precedences.put(TokenType.OPEN_CURLY_BRACKET_TOKEN, i);
+        precedences.put(TokenType.CLOSED_CURLY_BRACKET_TOKEN, i++);
+
         precedences.put(TokenType.EQUALS_TOKEN, i++);
 
         precedences.put(TokenType.DOUBLE_EQUALS_TOKEN, i);
