@@ -2,6 +2,7 @@ package come.homeproects.jvmstudy.parser;
 
 import come.homeproects.jvmstudy.parser.binder.Binder;
 import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
+import come.homeproects.jvmstudy.parser.diagnostics.Diagnostic;
 import come.homeproects.jvmstudy.parser.evaluator.Evaluator;
 
 import java.util.Objects;
@@ -61,12 +62,21 @@ public class Repl {
                 }
 
                 if (binder.diagnostics().hasErrors()) {
-                    binder.diagnostics().errors().forEach(System.err::println);
+                    binder.diagnostics().errors().forEach(Repl::printDiagnostic);
                 } else {
                     System.out.println("=> " + evaluator.evaluate(statement));
                 }
             }
         }
+    }
+
+    public static final String ANSI_RED = "\u001B[31m";
+
+    public static final String ANSI_RESET = "\u001B[0m";
+
+    private static void printDiagnostic(Diagnostic diagnostic) {
+        String str = String.format("%s(%d, %d): %s%s", ANSI_RED, diagnostic.lineNumber() + 1, diagnostic.startIndex() + 1, diagnostic.message(), ANSI_RESET);
+        System.out.println(str);
     }
 
     private static void printDebugInfo(Binder binder, BoundStatement statement) {
