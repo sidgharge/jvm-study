@@ -21,8 +21,8 @@ public class ManualTest {
                    {
                         var c = a + 5;
                    }
-                   var a = 13;
-                   a;
+                   var c = a + 1;
+                   c;
                 }
                 """;
 

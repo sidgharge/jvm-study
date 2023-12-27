@@ -7,6 +7,11 @@ public record ExpressionBoundStatement(BoundExpression expression, Token semiCol
 
     @Override
     public String toString() {
-        return expression.toString() + semiColonToken.value();
+        return prettyString(0);
+    }
+
+    @Override
+    public String prettyString(int indent) {
+        return "  ".repeat(indent) + expression.toString() + semiColonToken.value();
     }
 }

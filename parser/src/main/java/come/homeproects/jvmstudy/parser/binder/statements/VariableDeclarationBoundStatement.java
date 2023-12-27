@@ -12,7 +12,12 @@ public record VariableDeclarationBoundStatement(
 
     @Override
     public String toString() {
-        return String.format("%s %s %s %s%s",
+        return prettyString(0);
+    }
+
+    @Override
+    public String prettyString(int indent) {
+        return "  ".repeat(indent) + String.format("%s %s %s %s%s",
                 varToken.value(),
                 identifierToken.value(),
                 equalsToken.value(),

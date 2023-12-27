@@ -17,7 +17,7 @@ public record VariableDeclarationSyntaxStatement(
 
     @Override
     public String printString(int indent) {
-        return "".repeat(indent) + String.format("%s %s %s %s%s",
+        return "  ".repeat(indent) + String.format("%s %s %s %s%s",
                 varToken.value(),
                 identifierToken.value(),
                 equalsToken.value(),
