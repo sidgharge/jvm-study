@@ -1,8 +1,9 @@
 package come.homeproects.jvmstudy.parser.statements;
 
 import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
+import come.homeproects.jvmstudy.parser.lexer.Token;
 
-public record ExpressionSyntaxStatement(SyntaxExpression expression) implements SyntaxStatement {
+public record ExpressionSyntaxStatement(SyntaxExpression expression, Token semiColonToken) implements SyntaxStatement {
 
     @Override
     public StatementType statementType() {
@@ -16,6 +17,6 @@ public record ExpressionSyntaxStatement(SyntaxExpression expression) implements 
 
     @Override
     public String printString(int indent) {
-        return "  ".repeat(indent) + expression.toString();
+        return "  ".repeat(indent) + expression.toString() + semiColonToken.value();
     }
 }

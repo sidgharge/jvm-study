@@ -28,37 +28,18 @@ public class Parser {
 
     private int index;
 
-    private final boolean debug;
-
     public Parser(String expression) {
-        this(expression, true);
-    }
-
-    public Parser(String expression, boolean debug) {
         this.lexer = new Lexer(expression);
         this.diagnostics = new Diagnostics();
         this.tokens = new ArrayList<>();
         this.index = 0;
         this.tokenPrecedence = new TokenPrecedence();
-        this.debug = debug;
     }
 
 
     public SyntaxStatement parse() {
         tokenize();
-        if (this.diagnostics.hasErrors()) {
-            printErrors();
-        }
-        printTokens();
-
-        SyntaxStatement statement = parseStatement();
-        if (this.diagnostics.hasErrors()) {
-            printErrors();
-        }
-        if (debug) {
-            System.out.println(statement.printString(0));
-        }
-        return statement;
+        return parseStatement();
     }
 
     public SyntaxStatement parseStatement() {
@@ -71,7 +52,8 @@ public class Parser {
 
     private ExpressionSyntaxStatement parseExpressionStatement() {
         SyntaxExpression expression = parseExpression();
-        return new ExpressionSyntaxStatement(expression);
+        Token semiColonToken = matchAndAdvance(TokenType.SEMI_COLON_TOKEN);
+        return new ExpressionSyntaxStatement(expression, semiColonToken);
     }
 
     private BlockSyntaxStatement parseBlockStatement() {
@@ -114,7 +96,7 @@ public class Parser {
             return precedence;
         }
         diagnostics.addDiagnostic(token, "Precedence is not defined for: %s", token.type());
-        return Integer.MAX_VALUE;
+        return Integer.MIN_VALUE;
     }
 
     private SyntaxExpression parsePrimaryExpression() {
@@ -156,6 +138,16 @@ public class Parser {
         return syntaxExpression;
     }
 
+    private Token matchAndAdvance(TokenType type) {
+        Token token = current();
+        if (token.type().equals(type)) {
+            advance();
+            return token;
+        }
+        diagnostics.addDiagnostic(token, "Expected %s, got %s", type, token.type());
+        return new Token("", type, token.startIndex(), token.startIndex(), token.lineNumber());
+    }
+
     private void advance() {
         if (!isAtEnd()) {
             index++;
@@ -168,35 +160,6 @@ public class Parser {
 
     private boolean isAtEnd() {
         return index >= tokens.size();
-    }
-
-
-
-
-
-
-
-
-    private void printTokens() {
-        if (!debug) {
-            return;
-        }
-
-        System.out.println("--------------- TOKENS -------------------------");
-        for (Token token : this.tokens) {
-            System.out.println(token);
-        }
-        System.out.println();
-    }
-
-    private void printErrors() {
-        if (!debug) {
-            return;
-        }
-        System.err.println("--------------- ERRORS -------------------------");
-        for (Diagnostic diagnostic : this.diagnostics.errors()) {
-            System.err.println(diagnostic.message());
-        }
     }
 
     private void tokenize() {
@@ -212,5 +175,27 @@ public class Parser {
 
     public Diagnostics diagnostics() {
         return diagnostics;
+    }
+
+    public void printTokens() {
+        System.out.println("--------------- TOKENS -------------------------");
+        for (Token token : this.tokens) {
+            System.out.println(token);
+        }
+        System.out.println();
+    }
+
+    public void printErrors() {
+        if (!this.diagnostics.hasErrors()) {
+            return;
+        }
+        System.err.println("--------------- ERRORS -------------------------");
+        for (Diagnostic diagnostic : this.diagnostics.errors()) {
+            System.err.println(diagnostic.message());
+        }
+    }
+
+    public List<Token> tokens() {
+        return this.tokens;
     }
 }

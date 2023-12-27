@@ -31,20 +31,21 @@ public class Binder {
 
     private final Map<String, Type> types;
 
+    private List<Token> tokens;
+
+    private SyntaxStatement syntaxStatement;
+
     public Binder() {
         diagnostics = new Diagnostics();
         types = new HashMap<>();
     }
 
     public BoundStatement bind(String inputExpression) {
-        return bind(inputExpression, false);
-    }
-
-    public BoundStatement bind(String inputExpression, boolean debug) {
-        Parser parser = new Parser(inputExpression, debug);
-        SyntaxStatement statement = parser.parse();
+        Parser parser = new Parser(inputExpression);
+        this.syntaxStatement = parser.parse();
+        this.tokens = parser.tokens();
         parser.diagnostics().errors().forEach(diagnostics::add);
-        return bind(statement);
+        return bind(syntaxStatement);
     }
 
     private BoundStatement bind(SyntaxStatement statement) {
@@ -151,5 +152,13 @@ public class Binder {
 
     public Diagnostics diagnostics() {
         return diagnostics;
+    }
+
+    public List<Token> tokens() {
+        return tokens;
+    }
+
+    public SyntaxStatement syntaxStatement() {
+        return syntaxStatement;
     }
 }

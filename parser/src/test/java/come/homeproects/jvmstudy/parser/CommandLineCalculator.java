@@ -15,7 +15,7 @@ public class CommandLineCalculator {
     }
 
     public Object evaluateToObject(String expression) {
-        BoundStatement boundStatement = new Binder().bind(expression, false);
+        BoundStatement boundStatement = new Binder().bind(expression);
         return new Evaluator().evaluate(boundStatement);
     }
 
@@ -29,19 +29,24 @@ public class CommandLineCalculator {
 
         String expression = """
                 {
-                    a = 10
-                    b = 12
+                    a = 10;
+                    a = 5 + a;
+                    b = a;
                 }
+                b
                 """;
-//        System.out.println(expression);
-
-//        System.out.println(new Evaluator2().evaluate(new Parser(expression, true).parse()));
 
         Binder binder = new Binder();
-        BoundStatement statement = binder.bind(expression, true);
+        BoundStatement statement = binder.bind(expression);
+
+        System.out.println("Tokens:\n" + binder.tokens());
+
+        System.out.println("Parser AST:\n" + binder.syntaxStatement());
+
+        System.out.println("Binder AST:\n" + statement);
+
         if (binder.diagnostics().hasErrors()) {
             binder.diagnostics().errors().forEach(System.err::println);
-//            System.out.println(new Evaluator().evaluate(boundExpression));
             return;
         }
         System.out.println(new Evaluator().evaluate(statement));
@@ -57,7 +62,7 @@ public class CommandLineCalculator {
                 if (builder.isEmpty()) {
                     System.out.print(">> ");
                 } else {
-//                    System.out.print("| ");
+                    System.out.print("> ");
                 }
                 String line = scanner.nextLine();
                 if (line.equals("q")) {
@@ -76,7 +81,7 @@ public class CommandLineCalculator {
                 line = builder.toString();
                 builder = new StringBuilder();
 
-                BoundStatement statement = binder.bind(line, debug);
+                BoundStatement statement = binder.bind(line);
                 if (binder.diagnostics().hasErrors()) {
                     binder.diagnostics().errors().forEach(System.err::println);
 

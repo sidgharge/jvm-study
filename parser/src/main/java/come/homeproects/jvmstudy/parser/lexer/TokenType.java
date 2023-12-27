@@ -28,7 +28,8 @@ public enum TokenType {
 
     // Statement
     OPEN_CURLY_BRACKET_TOKEN,
-    CLOSED_CURLY_BRACKET_TOKEN;
+    CLOSED_CURLY_BRACKET_TOKEN,
+    SEMI_COLON_TOKEN;
 
     public boolean isMathematicalOperatorToken() {
         return this == PLUS_TOKEN ||
