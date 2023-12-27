@@ -7,6 +7,6 @@ public record ExpressionBoundStatement(BoundExpression expression, Token semiCol
 
     @Override
     public String toString() {
-        return expression.toString() + semiColonToken.toString();
+        return expression.toString() + semiColonToken.value();
     }
 }

@@ -7,6 +7,7 @@ import come.homeproects.jvmstudy.parser.binder.expressions.UnaryBoundExpression;
 import come.homeproects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
 
 import java.util.HashMap;
@@ -22,9 +23,17 @@ public class Evaluator {
         switch (statement) {
             case ExpressionBoundStatement expressionBoundStatement -> expressionBoundStatement(expressionBoundStatement);
             case BlockBoundStatement blockBoundStatement -> blockBoundStatement(blockBoundStatement);
+            case VariableDeclarationBoundStatement variableDeclarationBoundStatement -> variableDeclarationBoundStatement(variableDeclarationBoundStatement);
             default -> throw new RuntimeException("Unhandled statement type: " + statement.getClass());
         }
         return lastValue;
+    }
+
+    private void variableDeclarationBoundStatement(VariableDeclarationBoundStatement variableDeclarationBoundStatement) {
+        BoundExpression expression = variableDeclarationBoundStatement.expression();
+        Object result = evaluate(expression);
+        variables.put(variableDeclarationBoundStatement.identifierToken().value(), result);
+        lastValue = result;
     }
 
     private void blockBoundStatement(BlockBoundStatement blockBoundStatement) {

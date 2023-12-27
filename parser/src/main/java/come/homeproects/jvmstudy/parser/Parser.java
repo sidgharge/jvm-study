@@ -12,6 +12,7 @@ import come.homeproects.jvmstudy.parser.expressions.UnarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.lexer.Lexer;
 import come.homeproects.jvmstudy.parser.lexer.Token;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
+import come.homeproects.jvmstudy.parser.statements.VariableDeclarationSyntaxStatement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,20 +40,47 @@ public class Parser {
 
     public SyntaxStatement parse() {
         tokenize();
-        return parseStatement();
+        return parseTillEnd();
+//        return parseStatement();
+    }
+
+    private SyntaxStatement parseTillEnd() {
+        List<SyntaxStatement> statements = new ArrayList<>();
+        while (true) {
+            if (current().type().equals(TokenType.END_OF_FILE_TOKEN)) {
+                break;
+            }
+            SyntaxStatement statement = parseStatement();
+            statements.add(statement);
+        }
+        return new BlockSyntaxStatement(
+                new Token("{", TokenType.OPEN_CURLY_BRACKET_TOKEN, 0, 0, 0),
+                new Token("}", TokenType.CLOSED_CURLY_BRACKET_TOKEN, 0, 0, 0),
+                statements
+        );
     }
 
     public SyntaxStatement parseStatement() {
         Token token = current();
         return switch (token.type()) {
-            case TokenType.OPEN_CURLY_BRACKET_TOKEN -> parseBlockStatement();
+            case OPEN_CURLY_BRACKET_TOKEN -> parseBlockStatement();
+            case KEYWORD_VAR_TOKEN -> parseVariableDeclaration();
             default -> parseExpressionStatement();
         };
     }
 
+    private SyntaxStatement parseVariableDeclaration() {
+        Token varToken = matchAndAdvance(TokenType.KEYWORD_VAR_TOKEN, "var");
+        Token identifierToken = matchAndAdvance(TokenType.IDENTIFIER_TOKEN, "");
+        Token equalsToken = matchAndAdvance(TokenType.EQUALS_TOKEN, "=");
+        SyntaxExpression expression = parseExpression();
+        Token semiColonToken = matchAndAdvance(TokenType.SEMI_COLON_TOKEN, ";");
+        return new VariableDeclarationSyntaxStatement(varToken, identifierToken, equalsToken, expression, semiColonToken);
+    }
+
     private ExpressionSyntaxStatement parseExpressionStatement() {
         SyntaxExpression expression = parseExpression();
-        Token semiColonToken = matchAndAdvance(TokenType.SEMI_COLON_TOKEN);
+        Token semiColonToken = matchAndAdvance(TokenType.SEMI_COLON_TOKEN, ";");
         return new ExpressionSyntaxStatement(expression, semiColonToken);
     }
 
@@ -138,14 +166,14 @@ public class Parser {
         return syntaxExpression;
     }
 
-    private Token matchAndAdvance(TokenType type) {
+    private Token matchAndAdvance(TokenType type, String defaultValue) {
         Token token = current();
         if (token.type().equals(type)) {
             advance();
             return token;
         }
         diagnostics.addDiagnostic(token, "Expected %s, got %s", type, token.type());
-        return new Token("", type, token.startIndex(), token.startIndex(), token.lineNumber());
+        return new Token(defaultValue, type, token.startIndex(), token.startIndex(), token.lineNumber());
     }
 
     private void advance() {

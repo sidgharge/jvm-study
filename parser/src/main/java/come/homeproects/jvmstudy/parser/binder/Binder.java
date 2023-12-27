@@ -7,6 +7,7 @@ import come.homeproects.jvmstudy.parser.binder.expressions.UnaryBoundExpression;
 import come.homeproects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
 import come.homeproects.jvmstudy.parser.diagnostics.Diagnostics;
 import come.homeproects.jvmstudy.parser.Parser;
 import come.homeproects.jvmstudy.parser.expressions.BinarySyntaxExpression;
@@ -18,6 +19,7 @@ import come.homeproects.jvmstudy.parser.lexer.TokenType;
 import come.homeproects.jvmstudy.parser.statements.BlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.SyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.VariableDeclarationSyntaxStatement;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -52,8 +54,21 @@ public class Binder {
         return switch (statement) {
             case BlockSyntaxStatement blockSyntaxStatement -> blockSyntaxStatement(blockSyntaxStatement);
             case ExpressionSyntaxStatement expressionSyntaxStatement -> expressionSyntaxStatement(expressionSyntaxStatement);
+            case VariableDeclarationSyntaxStatement variableDeclarationSyntaxStatement -> variableDeclarationSyntaxStatement(variableDeclarationSyntaxStatement);
             default -> throw new RuntimeException("Unhandled statement type: " + statement.statementType());
         };
+    }
+
+    private BoundStatement variableDeclarationSyntaxStatement(VariableDeclarationSyntaxStatement variableDeclarationSyntaxStatement) {
+        BoundExpression expression = bind(variableDeclarationSyntaxStatement.expression());
+        types.put(variableDeclarationSyntaxStatement.identifierToken().value(), expression.type());
+        return new VariableDeclarationBoundStatement(
+                variableDeclarationSyntaxStatement.varToken(),
+                variableDeclarationSyntaxStatement.identifierToken(),
+                variableDeclarationSyntaxStatement.equalsToken(),
+                expression,
+                variableDeclarationSyntaxStatement.semiColonToken()
+        );
     }
 
     private ExpressionBoundStatement expressionSyntaxStatement(ExpressionSyntaxStatement expressionSyntaxStatement) {

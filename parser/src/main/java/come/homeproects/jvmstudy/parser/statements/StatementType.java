@@ -4,4 +4,5 @@ public enum StatementType {
 
     BLOCK_STATEMENT,
     EXPRESSION_STATEMENT,
+    VARIABLE_DECLARATION_STATEMENT,
 }

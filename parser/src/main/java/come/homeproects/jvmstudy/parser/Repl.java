@@ -24,31 +24,6 @@ public class Repl {
 //        test();
     }
 
-    public static void test() {
-//        String expression = "2 *(3 + 4 * (5 + 6))";
-
-        String expression = """
-                {
-                    a = 10 + b
-                }
-                """;
-
-        Binder binder = new Binder();
-        BoundStatement statement = binder.bind(expression);
-
-        System.out.println("Tokens:\n" + binder.tokens().stream().map(Objects::toString).collect(Collectors.joining(" ")));
-
-        System.out.println("Parser AST:\n" + binder.syntaxStatement());
-
-        System.out.println("Binder AST:\n" + statement);
-
-        if (binder.diagnostics().hasErrors()) {
-            binder.diagnostics().errors().forEach(System.err::println);
-            return;
-        }
-        System.out.println(new Evaluator().evaluate(statement));
-    }
-
     public static void repl() {
         boolean debug = false;
         Binder binder = new Binder();
