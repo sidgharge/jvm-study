@@ -13,16 +13,17 @@ public class ManualTest {
 
     @Test
     public void test() {
-//        String expression = "2 *(3 + 4 * (5 + 6))";
+//        String expression = "((15 - 3) - 1);";
 
         String expression = """
                 {
-                    var a = 5 * 6;
+                   var a = 10;
+                   {
+                        var c = a + 5;
+                   }
+                   var a = 13;
+                   a;
                 }
-                {
-                    var a = a + 5;
-                }
-                a + 2;
                 """;
 
         Binder binder = new Binder();

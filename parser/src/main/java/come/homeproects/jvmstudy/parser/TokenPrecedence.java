@@ -20,8 +20,6 @@ public class TokenPrecedence {
         precedences.put(TokenType.SEMI_COLON_TOKEN, i);
         precedences.put(TokenType.CLOSED_CURLY_BRACKET_TOKEN, i++);
 
-        precedences.put(TokenType.EQUALS_TOKEN, i++);
-
         precedences.put(TokenType.DOUBLE_EQUALS_TOKEN, i);
         precedences.put(TokenType.BANG_EQUALS_TOKEN, i++);
 

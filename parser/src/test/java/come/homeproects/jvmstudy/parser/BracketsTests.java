@@ -40,7 +40,7 @@ public class BracketsTests {
 
     @Test
     public void bracket6() {
-        int result = calculator.evaluate("((15 - 3) - 1))");
+        int result = calculator.evaluate("((15 - 3) - 1)");
         assertThat(result).isEqualTo(11);
     }
 }

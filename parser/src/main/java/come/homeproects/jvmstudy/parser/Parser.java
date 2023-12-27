@@ -123,7 +123,7 @@ public class Parser {
         if (precedence != null) {
             return precedence;
         }
-        diagnostics.addDiagnostic(token, "Precedence is not defined for: %s", token.type());
+        diagnostics.addDiagnostic(token, "Invalid token: '%s'", token.value());
         return Integer.MIN_VALUE;
     }
 

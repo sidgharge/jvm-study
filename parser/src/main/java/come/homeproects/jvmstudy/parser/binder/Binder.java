@@ -1,7 +1,9 @@
 package come.homeproects.jvmstudy.parser.binder;
 
+import come.homeproects.jvmstudy.parser.Parser;
 import come.homeproects.jvmstudy.parser.binder.expressions.BinaryBoundExpression;
 import come.homeproects.jvmstudy.parser.binder.expressions.BoundExpression;
+import come.homeproects.jvmstudy.parser.binder.expressions.BoundExpression.NoOpBoundExpression;
 import come.homeproects.jvmstudy.parser.binder.expressions.LiteralBoundExpression;
 import come.homeproects.jvmstudy.parser.binder.expressions.UnaryBoundExpression;
 import come.homeproects.jvmstudy.parser.binder.statements.BlockBoundStatement;
@@ -9,10 +11,9 @@ import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
 import come.homeproects.jvmstudy.parser.diagnostics.Diagnostics;
-import come.homeproects.jvmstudy.parser.Parser;
 import come.homeproects.jvmstudy.parser.expressions.BinarySyntaxExpression;
-import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
 import come.homeproects.jvmstudy.parser.expressions.LiteralSyntaxExpression;
+import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
 import come.homeproects.jvmstudy.parser.expressions.UnarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.lexer.Token;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
@@ -26,20 +27,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class Binder {
 
     private final Diagnostics diagnostics;
 
-    private final Map<String, Type> types;
+    private final List<Map<String, Type>> scopedTypes;
 
     private List<Token> tokens;
 
     private SyntaxStatement syntaxStatement;
 
     public Binder() {
-        diagnostics = new Diagnostics();
-        types = new HashMap<>();
+        this.diagnostics = new Diagnostics();
+        this.scopedTypes = new ArrayList<>();
     }
 
     public BoundStatement bind(String inputExpression) {
@@ -60,8 +62,14 @@ public class Binder {
     }
 
     private BoundStatement variableDeclarationSyntaxStatement(VariableDeclarationSyntaxStatement variableDeclarationSyntaxStatement) {
+        String name = variableDeclarationSyntaxStatement.identifierToken().value();
+        Map<String, Type> types = scopedTypes.getLast();
+        if (types.containsKey(name)) {
+            diagnostics.addDiagnostic(variableDeclarationSyntaxStatement.varToken(), "Variable '%s' is already defined", name);
+            return null;
+        }
         BoundExpression expression = bind(variableDeclarationSyntaxStatement.expression());
-        types.put(variableDeclarationSyntaxStatement.identifierToken().value(), expression.type());
+        types.put(name, expression.type());
         return new VariableDeclarationBoundStatement(
                 variableDeclarationSyntaxStatement.varToken(),
                 variableDeclarationSyntaxStatement.identifierToken(),
@@ -77,11 +85,15 @@ public class Binder {
     }
 
     private BlockBoundStatement blockSyntaxStatement(BlockSyntaxStatement blockSyntaxStatement) {
-        List<BoundStatement> statements = new ArrayList<>();
+        scopedTypes.add(new HashMap<>());
+        ArrayList<BoundStatement> statements = new ArrayList<>();
         for (SyntaxStatement statement: blockSyntaxStatement.statements()) {
             BoundStatement boundStatement = bind(statement);
-            statements.add(boundStatement);
+            if (boundStatement != null) {
+                statements.add(boundStatement);
+            }
         }
+        scopedTypes.removeLast();
         return new BlockBoundStatement(blockSyntaxStatement.openBracket(), blockSyntaxStatement.closedBracket(), statements);
     }
 
@@ -95,9 +107,6 @@ public class Binder {
     }
 
     private BinaryBoundExpression binaryExpression(BinarySyntaxExpression binaryExpression) {
-        if (isVariableAssignment(binaryExpression)) {
-            return variableAssignmentSyntaxExpression(binaryExpression);
-        }
         BoundExpression left = bind(binaryExpression.left());
         BoundExpression right = bind(binaryExpression.right());
         Token operatorToken = binaryExpression.token();
@@ -115,20 +124,6 @@ public class Binder {
             return new BinaryBoundExpression(left, right, binaryExpression.token(), boolean.class);
         }
         diagnostics.addDiagnostic(operatorToken, "Operand '%s' is not implemented to use with '%s' and '%s'", binaryExpression.token().value(), left.type(), right.type());
-        return new BinaryBoundExpression(left, right, binaryExpression.token(), left.type());
-    }
-
-    private boolean isVariableAssignment(BinarySyntaxExpression binaryExpression) {
-        return binaryExpression.token().type().equals(TokenType.EQUALS_TOKEN)
-                && binaryExpression.left() instanceof LiteralSyntaxExpression
-                && ((LiteralSyntaxExpression)binaryExpression.left()).token().type().equals(TokenType.IDENTIFIER_TOKEN);
-    }
-
-    private BinaryBoundExpression variableAssignmentSyntaxExpression(BinarySyntaxExpression binaryExpression) {
-        BoundExpression right = bind(binaryExpression.right());
-        Token token = ((LiteralSyntaxExpression) binaryExpression.left()).token();
-        LiteralBoundExpression left = new LiteralBoundExpression(token, right.type());
-        types.put(token.value(), left.type());
         return new BinaryBoundExpression(left, right, binaryExpression.token(), left.type());
     }
 
@@ -151,18 +146,35 @@ public class Binder {
         return new UnaryBoundExpression(operator, expression.type(), expression);
     }
 
-    private LiteralBoundExpression literalExpression(LiteralSyntaxExpression literalExpression) {
+    private BoundExpression literalExpression(LiteralSyntaxExpression literalExpression) {
         Token token = literalExpression.token();
-        Type type =  switch (token.type()) {
-            case NUMBER_TOKEN -> int.class;
-            case KEYWORD_TRUE_TOKEN, KEYWORD_FALSE_TOKEN -> boolean.class;
-            case IDENTIFIER_TOKEN -> types.getOrDefault(token.value(), Object.class);
-            default -> null;
-        };
-        if (type == null) {
-            this.diagnostics.addDiagnostic(token, "Unknown syntax '%s' at index %d", token.value(), token.startIndex());
+
+        if (token.type().equals(TokenType.NUMBER_TOKEN)) {
+            return new LiteralBoundExpression(token, int.class);
         }
-        return new LiteralBoundExpression(token, type);
+        if (token.type().equals(TokenType.KEYWORD_TRUE_TOKEN) || token.type().equals(TokenType.KEYWORD_FALSE_TOKEN)) {
+            return new LiteralBoundExpression(token, boolean.class);
+        }
+        if (token.type() == TokenType.IDENTIFIER_TOKEN) {
+            Optional<Type> type = getTypeFromStack(token);
+            if (type.isEmpty()) {
+                this.diagnostics.addDiagnostic(token, "Variable '%s' is not in scope", token.value());
+                return new NoOpBoundExpression(token.value());
+            }
+            return new LiteralBoundExpression(token, type.get());
+        }
+
+        this.diagnostics.addDiagnostic(token, "Unknown syntax '%s' at index %d", token.value(), token.startIndex());
+        return new NoOpBoundExpression(token.value());
+    }
+
+    private Optional<Type> getTypeFromStack(Token token) {
+        for (int i = scopedTypes.size() - 1; i > 0; i--) {
+            if (scopedTypes.get(i).containsKey(token.value())) {
+                return Optional.of(scopedTypes.get(i).get(token.value()));
+            }
+        }
+        return Optional.empty();
     }
 
     public Diagnostics diagnostics() {
