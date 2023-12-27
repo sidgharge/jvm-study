@@ -58,7 +58,7 @@ public class Binder {
 
     private ExpressionBoundStatement expressionSyntaxStatement(ExpressionSyntaxStatement expressionSyntaxStatement) {
         BoundExpression expression = bind(expressionSyntaxStatement.expression());
-        return new ExpressionBoundStatement(expression);
+        return new ExpressionBoundStatement(expression, expressionSyntaxStatement.semiColonToken());
     }
 
     private BlockBoundStatement blockSyntaxStatement(BlockSyntaxStatement blockSyntaxStatement) {

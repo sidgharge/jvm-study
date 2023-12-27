@@ -1,12 +1,11 @@
 package come.homeproects.jvmstudy.parser;
 
-import org.assertj.core.api.Assert;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class UnaryOperationTests {
 
-    private final CommandLineCalculator calculator = new CommandLineCalculator();
+    private final Repl calculator = new Repl();
 
     @Test
     public void singleNumber1() {

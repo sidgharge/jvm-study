@@ -1,14 +1,14 @@
 package come.homeproects.jvmstudy.parser;
 
 import come.homeproects.jvmstudy.parser.binder.Binder;
-import come.homeproects.jvmstudy.parser.binder.expressions.BoundExpression;
 import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
 import come.homeproects.jvmstudy.parser.evaluator.Evaluator;
-import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
 
+import java.util.Objects;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
-public class CommandLineCalculator {
+public class Repl {
 
     public int evaluate(String expression) {
         return (int)evaluateToObject(expression);
@@ -20,8 +20,8 @@ public class CommandLineCalculator {
     }
 
     public static void main(String[] args) {
-//        repl();
-        test();
+        repl();
+//        test();
     }
 
     public static void test() {
@@ -29,17 +29,14 @@ public class CommandLineCalculator {
 
         String expression = """
                 {
-                    a = 10;
-                    a = 5 + a;
-                    b = a;
+                    a = 10 + b
                 }
-                b
                 """;
 
         Binder binder = new Binder();
         BoundStatement statement = binder.bind(expression);
 
-        System.out.println("Tokens:\n" + binder.tokens());
+        System.out.println("Tokens:\n" + binder.tokens().stream().map(Objects::toString).collect(Collectors.joining(" ")));
 
         System.out.println("Parser AST:\n" + binder.syntaxStatement());
 
@@ -81,6 +78,7 @@ public class CommandLineCalculator {
                 line = builder.toString();
                 builder = new StringBuilder();
 
+                binder.diagnostics().errors().clear();
                 BoundStatement statement = binder.bind(line);
                 if (binder.diagnostics().hasErrors()) {
                     binder.diagnostics().errors().forEach(System.err::println);

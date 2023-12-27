@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class CommandLineCalculatorTests {
+public class ReplTests {
 
-    private final CommandLineCalculator calculator = new CommandLineCalculator();
+    private final Repl calculator = new Repl();
 
     @Test
     public void returnNumberWhenNumberIsPassed1() {

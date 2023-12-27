@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class BracketsTests {
 
-    private final CommandLineCalculator calculator = new CommandLineCalculator();
+    private final Repl calculator = new Repl();
 
     @Test
     public void bracket1() {
