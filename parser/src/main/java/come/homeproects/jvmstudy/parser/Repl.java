@@ -55,13 +55,25 @@ public class Repl {
 
                 binder.diagnostics().errors().clear();
                 BoundStatement statement = binder.bind(line);
+
+                if (debug) {
+                    printDebugInfo(binder, statement);
+                }
+
                 if (binder.diagnostics().hasErrors()) {
                     binder.diagnostics().errors().forEach(System.err::println);
-
                 } else {
                     System.out.println("=> " + evaluator.evaluate(statement));
                 }
             }
         }
+    }
+
+    private static void printDebugInfo(Binder binder, BoundStatement statement) {
+        System.out.println("Tokens:\n" + binder.tokens().stream().map(Objects::toString).collect(Collectors.joining(" ")));
+
+        System.out.println("Parser AST:\n" + binder.syntaxStatement().printString(0));
+
+        System.out.println("Binder AST:\n" + statement);
     }
 }

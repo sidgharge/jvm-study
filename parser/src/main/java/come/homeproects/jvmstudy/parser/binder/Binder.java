@@ -169,7 +169,7 @@ public class Binder {
     }
 
     private Optional<Type> getTypeFromStack(Token token) {
-        for (int i = scopedTypes.size() - 1; i > 0; i--) {
+        for (int i = scopedTypes.size() - 1; i >= 0; i--) {
             if (scopedTypes.get(i).containsKey(token.value())) {
                 return Optional.of(scopedTypes.get(i).get(token.value()));
             }
