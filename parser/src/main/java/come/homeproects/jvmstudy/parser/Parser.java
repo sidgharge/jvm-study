@@ -13,6 +13,7 @@ import come.homeproects.jvmstudy.parser.lexer.Lexer;
 import come.homeproects.jvmstudy.parser.lexer.Token;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
 import come.homeproects.jvmstudy.parser.statements.VariableDeclarationSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.VariableReassignmentSyntaxStatement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,8 +66,17 @@ public class Parser {
         return switch (token.type()) {
             case OPEN_CURLY_BRACKET_TOKEN -> parseBlockStatement();
             case KEYWORD_VAR_TOKEN -> parseVariableDeclaration();
+            case IDENTIFIER_TOKEN -> parseVariableReassignment();
             default -> parseExpressionStatement();
         };
+    }
+
+    private SyntaxStatement parseVariableReassignment() {
+        Token identifierToken = matchAndAdvance(TokenType.IDENTIFIER_TOKEN, "");
+        Token equalsToken = matchAndAdvance(TokenType.EQUALS_TOKEN, "=");
+        SyntaxExpression expression = parseExpression();
+        Token semiColonToken = matchAndAdvance(TokenType.SEMI_COLON_TOKEN, ";");
+        return new VariableReassignmentSyntaxStatement(identifierToken, equalsToken, expression, semiColonToken);
     }
 
     private SyntaxStatement parseVariableDeclaration() {

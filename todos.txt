@@ -1,2 +1,4 @@
 - Think about binder and error messages propagating
 - better errors
+- var reassignments
+- if blocks

@@ -8,6 +8,7 @@ import come.homeproects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.VariableReassignmentBoundStatement;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
 
 import java.util.ArrayList;
@@ -31,9 +32,18 @@ public class Evaluator {
             case ExpressionBoundStatement expressionBoundStatement -> expressionBoundStatement(expressionBoundStatement);
             case BlockBoundStatement blockBoundStatement -> blockBoundStatement(blockBoundStatement);
             case VariableDeclarationBoundStatement variableDeclarationBoundStatement -> variableDeclarationBoundStatement(variableDeclarationBoundStatement);
+            case VariableReassignmentBoundStatement variableReassignmentBoundStatement -> variableReassignmentBoundStatement(variableReassignmentBoundStatement);
             default -> throw new RuntimeException("Unhandled statement type: " + statement.getClass());
         }
         return lastValue;
+    }
+
+    private void variableReassignmentBoundStatement(VariableReassignmentBoundStatement variableReassignmentBoundStatement) {
+        BoundExpression expression = variableReassignmentBoundStatement.expression();
+        Object result = evaluate(expression);
+        String name = variableReassignmentBoundStatement.identifierToken().value();
+        findVariableMap(name).map(m -> m.put(name, result));
+        lastValue = result;
     }
 
     private void variableDeclarationBoundStatement(VariableDeclarationBoundStatement variableDeclarationBoundStatement) {
@@ -75,9 +85,13 @@ public class Evaluator {
     }
 
     private Optional<Object> findVariableValue(String name) {
+        return findVariableMap(name).map(m -> m.get(name));
+    }
+
+    private Optional<Map<String, Object>> findVariableMap(String name) {
         for (int i = variables.size() - 1; i >= 0; i--) {
             if (variables.get(i).containsKey(name)) {
-                return Optional.ofNullable(variables.get(i).get(name));
+                return Optional.ofNullable(variables.get(i));
             }
         }
         return Optional.empty();

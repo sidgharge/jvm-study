@@ -19,10 +19,9 @@ public class ManualTest {
                 {
                     var a = 10;
                     {
-                        var b = 10;
-                        var a = a * 20 + b;
+                        a = a + 5;
+                        var b = a + 5;
                     }
-                    a;
                 }
                 """;
 

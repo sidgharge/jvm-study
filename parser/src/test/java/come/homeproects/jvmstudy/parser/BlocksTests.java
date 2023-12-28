@@ -14,7 +14,7 @@ public class BlocksTests {
                     var a = 10;
                     {
                         var b = a + 20;
-                        b;
+                        b = b;
                     }
                 }
                 """);
@@ -28,7 +28,7 @@ public class BlocksTests {
                     var a = 10;
                     {
                         var b = a == 10;
-                        b;
+                        b = b;
                     }
                 }
                 """);
@@ -43,7 +43,7 @@ public class BlocksTests {
                     var a = 10;
                     {
                         var b = x + 10 + a;
-                        b;
+                        b = b;
                     }
                 }
                 """);
@@ -59,10 +59,25 @@ public class BlocksTests {
                         var b = 10;
                         var a = a * 20 + b;
                     }
-                    a;
+                    a = a;
                 }
                 """;
         Object result = repl.evaluateToObject(expression);
         Assertions.assertThat(result).isEqualTo(10);
+    }
+
+    @Test
+    public void varReassignment() {
+        String expression = """
+                {
+                    var a = 10;
+                    {
+                        a = 20;
+                        var b = a * 3;
+                    }
+                }
+                """;
+        Object result = repl.evaluateToObject(expression);
+        Assertions.assertThat(result).isEqualTo(60);
     }
 }

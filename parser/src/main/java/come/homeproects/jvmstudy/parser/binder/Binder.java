@@ -10,6 +10,7 @@ import come.homeproects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.VariableReassignmentBoundStatement;
 import come.homeproects.jvmstudy.parser.diagnostics.Diagnostics;
 import come.homeproects.jvmstudy.parser.expressions.BinarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.expressions.LiteralSyntaxExpression;
@@ -21,6 +22,7 @@ import come.homeproects.jvmstudy.parser.statements.BlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.SyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.VariableDeclarationSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.VariableReassignmentSyntaxStatement;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -57,8 +59,29 @@ public class Binder {
             case BlockSyntaxStatement blockSyntaxStatement -> blockSyntaxStatement(blockSyntaxStatement);
             case ExpressionSyntaxStatement expressionSyntaxStatement -> expressionSyntaxStatement(expressionSyntaxStatement);
             case VariableDeclarationSyntaxStatement variableDeclarationSyntaxStatement -> variableDeclarationSyntaxStatement(variableDeclarationSyntaxStatement);
+            case VariableReassignmentSyntaxStatement variableReassignmentSyntaxStatement -> variableReassignmentSyntaxStatement(variableReassignmentSyntaxStatement);
             default -> throw new RuntimeException("Unhandled statement type: " + statement.statementType());
         };
+    }
+
+    private VariableReassignmentBoundStatement variableReassignmentSyntaxStatement(VariableReassignmentSyntaxStatement variableReassignmentSyntaxStatement) {
+        String name = variableReassignmentSyntaxStatement.identifierToken().value();
+        Optional<Type> typeOptional = getTypeFromStack(variableReassignmentSyntaxStatement.identifierToken());
+        if (typeOptional.isEmpty()) {
+            diagnostics.addDiagnostic(variableReassignmentSyntaxStatement.identifierToken(), "Variable '%s' is not defined", name);
+            return null;
+        }
+        BoundExpression expression = bind(variableReassignmentSyntaxStatement.expression());
+
+        if (!expression.type().equals(typeOptional.get())) {
+            diagnostics.addDiagnostic(variableReassignmentSyntaxStatement.identifierToken(), "Assigned variable('%s') type is %s, declared with %s", name, typeOptional.get(), expression.type());
+        }
+        return new VariableReassignmentBoundStatement(
+                variableReassignmentSyntaxStatement.identifierToken(),
+                variableReassignmentSyntaxStatement.equalsToken(),
+                expression,
+                variableReassignmentSyntaxStatement.semiColonToken()
+        );
     }
 
     private BoundStatement variableDeclarationSyntaxStatement(VariableDeclarationSyntaxStatement variableDeclarationSyntaxStatement) {
