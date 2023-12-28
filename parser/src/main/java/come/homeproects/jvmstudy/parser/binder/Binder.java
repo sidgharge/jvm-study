@@ -70,7 +70,7 @@ public class Binder {
     private IfBlockBoundStatement ifBlockSyntaxStatement(IfBlockSyntaxStatement ifBlockSyntaxStatement) {
         BoundExpression condition = bind(ifBlockSyntaxStatement.condition());
         if(!condition.type().equals(boolean.class)) {
-            diagnostics.addDiagnostic(ifBlockSyntaxStatement.ifKeywordToken(), "Condition inside if expected of type boolean, got %s", condition.type());
+            diagnostics.addDiagnostic(ifBlockSyntaxStatement.ifKeywordToken(), "Condition inside `if` should evaluate to a boolean, but got `%s`", condition.type());
         }
         BoundStatement body = bind(ifBlockSyntaxStatement.ifBlockBody());
         return new IfBlockBoundStatement(
