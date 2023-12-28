@@ -17,7 +17,12 @@ public class ManualTest {
 
         String expression = """
                 {
-                    1 + 4 == 3 + 2;
+                    var a = 10;
+                    {
+                        var b = 10;
+                        var a = a * 20 + b;
+                    }
+                    a;
                 }
                 """;
 

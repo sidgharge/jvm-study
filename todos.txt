@@ -1,4 +1,2 @@
 - Think about binder and error messages propagating
-- test cases
 - better errors
-- scopes not working in Binder

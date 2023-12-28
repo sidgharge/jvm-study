@@ -10,14 +10,21 @@ import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStateme
 import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class Evaluator {
 
-    Map<String, Object> variables = new HashMap<>();
+    private final List<Map<String, Object>> variables;
 
     private Object lastValue;
+
+    public Evaluator() {
+        this.variables = new ArrayList<>();
+    }
 
     public Object evaluate(BoundStatement statement) {
         switch (statement) {
@@ -32,14 +39,16 @@ public class Evaluator {
     private void variableDeclarationBoundStatement(VariableDeclarationBoundStatement variableDeclarationBoundStatement) {
         BoundExpression expression = variableDeclarationBoundStatement.expression();
         Object result = evaluate(expression);
-        variables.put(variableDeclarationBoundStatement.identifierToken().value(), result);
+        variables.getLast().put(variableDeclarationBoundStatement.identifierToken().value(), result);
         lastValue = result;
     }
 
     private void blockBoundStatement(BlockBoundStatement blockBoundStatement) {
+        variables.add(new HashMap<>());
         for (BoundStatement statement : blockBoundStatement.statements()) {
             evaluate(statement);
         }
+        variables.removeLast();
     }
 
     private void expressionBoundStatement(ExpressionBoundStatement expressionBoundStatement) {
@@ -60,9 +69,18 @@ public class Evaluator {
             case KEYWORD_TRUE_TOKEN -> true;
             case KEYWORD_FALSE_TOKEN -> false;
             case NUMBER_TOKEN -> Integer.parseInt(literalExpression.token().value());
-            case IDENTIFIER_TOKEN -> variables.getOrDefault(literalExpression.token().value(), null);
+            case IDENTIFIER_TOKEN -> findVariableValue(literalExpression.token().value()).orElse(null);
             default -> throw new RuntimeException("Unhandled keyword " + literalExpression.token().value());
         };
+    }
+
+    private Optional<Object> findVariableValue(String name) {
+        for (int i = variables.size() - 1; i >= 0; i--) {
+            if (variables.get(i).containsKey(name)) {
+                return Optional.ofNullable(variables.get(i).get(name));
+            }
+        }
+        return Optional.empty();
     }
 
     private Object unaryExpression(UnaryBoundExpression unaryExpression) {
@@ -94,12 +112,15 @@ public class Evaluator {
     }
 
     private Object assignmentEvaluation(BinaryBoundExpression binaryExpression) {
+        if (true) {
+            throw new RuntimeException("COde should never come here");
+        }
         if (!(binaryExpression.left() instanceof LiteralBoundExpression) || !((LiteralBoundExpression) binaryExpression.left()).token().type().equals(TokenType.IDENTIFIER_TOKEN)) {
             throw new RuntimeException("Left side of assignment is not a variable");
         }
         Object result = evaluate(binaryExpression.right());
         String variableName = ((LiteralBoundExpression) binaryExpression.left()).token().value();
-        variables.put(variableName, result);
+//        variables.put(variableName, result);
         return result;
     }
 }

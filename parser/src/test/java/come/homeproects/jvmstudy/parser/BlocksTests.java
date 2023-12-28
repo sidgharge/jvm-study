@@ -49,4 +49,20 @@ public class BlocksTests {
                 """);
         Assertions.assertThat(result).isEqualTo(25);
     }
+
+    @Test
+    public void block2() {
+        String expression = """
+                {
+                    var a = 10;
+                    {
+                        var b = 10;
+                        var a = a * 20 + b;
+                    }
+                    a;
+                }
+                """;
+        Object result = repl.evaluateToObject(expression);
+        Assertions.assertThat(result).isEqualTo(10);
+    }
 }
