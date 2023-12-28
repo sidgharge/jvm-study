@@ -12,6 +12,11 @@ public record ElseBlockSyntaxStatement(
     }
 
     @Override
+    public String toString() {
+        return printString(0);
+    }
+
+    @Override
     public String printString(int indent) {
         return String.format(" %s\n%s",
                 elseKeywordToken.value(),

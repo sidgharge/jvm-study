@@ -3,19 +3,16 @@ package come.homeproects.jvmstudy.parser.statements;
 import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
 import come.homeproects.jvmstudy.parser.lexer.Token;
 
-import java.util.Optional;
-
-public record IfBlockSyntaxStatement(
-        Token ifKeywordToken,
+public record WhileBlockSyntaxStatement(
+        Token whileKeywordToken,
         Token openBracket,
         SyntaxExpression condition,
         Token closedBracket,
-        BlockSyntaxStatement ifBlockBody,
-        Optional<ElseBlockSyntaxStatement> elseBlockBody) implements SyntaxStatement {
+        BlockSyntaxStatement whileBlockBody) implements SyntaxStatement {
 
     @Override
     public StatementType statementType() {
-        return StatementType.IF_STATEMENT;
+        return StatementType.WHILE_STATEMENT;
     }
 
     @Override
@@ -25,12 +22,11 @@ public record IfBlockSyntaxStatement(
 
     @Override
     public String printString(int indent) {
-        return "  ".repeat(indent) + String.format("%s %s%s%s\n%s%s",
-                ifKeywordToken.value(),
+        return "  ".repeat(indent) + String.format("%s %s%s%s\n%s",
+                whileKeywordToken.value(),
                 openBracket.value(),
                 condition.toString(),
                 closedBracket.value(),
-                ifBlockBody.printString(indent),
-                elseBlockBody.map(e -> e.printString(indent)).orElse(""));
+                whileBlockBody.printString(indent));
     }
 }

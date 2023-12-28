@@ -17,12 +17,10 @@ public class ManualTest {
 
         String expression = """
                 {
-                    var a = 10;
+                    var a = 11;
                     {
-                       if(a >= 10) {
-                        a = 20;
-                       } else {
-                        a = 5;
+                       while(a < 20) {
+                            a = a + 2;
                        }
                     }
                     a = a;

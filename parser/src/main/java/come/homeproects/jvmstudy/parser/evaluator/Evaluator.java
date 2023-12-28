@@ -11,6 +11,7 @@ import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStateme
 import come.homeproects.jvmstudy.parser.binder.statements.IfBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableReassignmentBoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.WhileBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
 
 import java.util.ArrayList;
@@ -36,9 +37,18 @@ public class Evaluator {
             case VariableDeclarationBoundStatement variableDeclarationBoundStatement -> variableDeclarationBoundStatement(variableDeclarationBoundStatement);
             case VariableReassignmentBoundStatement variableReassignmentBoundStatement -> variableReassignmentBoundStatement(variableReassignmentBoundStatement);
             case IfBlockBoundStatement ifBlockBoundStatement-> ifBlockBoundStatement(ifBlockBoundStatement);
+            case WhileBlockBoundStatement whileBlockBoundStatement-> whileBlockBoundStatement(whileBlockBoundStatement);
             default -> throw new RuntimeException("Unhandled statement type: " + statement.getClass());
         }
         return lastValue;
+    }
+
+    private void whileBlockBoundStatement(WhileBlockBoundStatement whileBlockBoundStatement) {
+        boolean condition = (boolean) evaluate(whileBlockBoundStatement.condition());
+        while (condition) {
+            evaluate(whileBlockBoundStatement.whileBlockBody());
+            condition = (boolean) evaluate(whileBlockBoundStatement.condition());
+        }
     }
 
     private void ifBlockBoundStatement(IfBlockBoundStatement ifBlockBoundStatement) {

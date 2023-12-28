@@ -13,6 +13,7 @@ import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStateme
 import come.homeproects.jvmstudy.parser.binder.statements.IfBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableReassignmentBoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.WhileBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.diagnostics.Diagnostics;
 import come.homeproects.jvmstudy.parser.expressions.BinarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.expressions.LiteralSyntaxExpression;
@@ -27,6 +28,7 @@ import come.homeproects.jvmstudy.parser.statements.IfBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.SyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.VariableDeclarationSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.VariableReassignmentSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.WhileBlockSyntaxStatement;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -65,8 +67,24 @@ public class Binder {
             case VariableDeclarationSyntaxStatement variableDeclarationSyntaxStatement -> variableDeclarationSyntaxStatement(variableDeclarationSyntaxStatement);
             case VariableReassignmentSyntaxStatement variableReassignmentSyntaxStatement -> variableReassignmentSyntaxStatement(variableReassignmentSyntaxStatement);
             case IfBlockSyntaxStatement ifBlockSyntaxStatement -> ifBlockSyntaxStatement(ifBlockSyntaxStatement);
+            case WhileBlockSyntaxStatement whileBlockSyntaxStatement -> whileBlockSyntaxStatement(whileBlockSyntaxStatement);
             default -> throw new RuntimeException("Unhandled statement type: " + statement.statementType());
         };
+    }
+
+    private BoundStatement whileBlockSyntaxStatement(WhileBlockSyntaxStatement whileBlockSyntaxStatement) {
+        BoundExpression condition = bind(whileBlockSyntaxStatement.condition());
+        if(!condition.type().equals(boolean.class)) {
+            diagnostics.addDiagnostic(whileBlockSyntaxStatement.whileKeywordToken(), "Condition inside `while` should evaluate to a boolean, but got `%s`", condition.type());
+        }
+        BoundStatement body = bind(whileBlockSyntaxStatement.whileBlockBody());
+        return new WhileBlockBoundStatement(
+                whileBlockSyntaxStatement.whileKeywordToken(),
+                whileBlockSyntaxStatement.openBracket(),
+                condition,
+                whileBlockSyntaxStatement.closedBracket(),
+                body
+        );
     }
 
     private IfBlockBoundStatement ifBlockSyntaxStatement(IfBlockSyntaxStatement ifBlockSyntaxStatement) {
@@ -215,7 +233,7 @@ public class Binder {
             return new LiteralBoundExpression(token, type.get());
         }
 
-        this.diagnostics.addDiagnostic(token, "Unknown syntax '%s'");
+        this.diagnostics.addDiagnostic(token, "Unknown syntax '%s'", token.value());
         return new NoOpBoundExpression(token.value());
     }
 

@@ -16,6 +16,7 @@ import come.homeproects.jvmstudy.parser.lexer.Token;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
 import come.homeproects.jvmstudy.parser.statements.VariableDeclarationSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.VariableReassignmentSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.WhileBlockSyntaxStatement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,8 +72,18 @@ public class Parser {
             case KEYWORD_VAR_TOKEN -> parseVariableDeclaration();
             case IDENTIFIER_TOKEN -> parseVariableReassignment();
             case KEYWORD_IF_TOKEN -> parseIfStatement();
+            case KEYWORD_WHILE_TOKEN -> parseWhileStatement();
             default -> parseExpressionStatement();
         };
+    }
+
+    private WhileBlockSyntaxStatement parseWhileStatement() {
+        Token ifKeywordToken = matchAndAdvance(TokenType.KEYWORD_WHILE_TOKEN, "while");
+        Token openBracket = matchAndAdvance(TokenType.OPEN_BRACKET_TOKEN, "(");
+        SyntaxExpression condition = parseExpression();
+        Token closedBracket = matchAndAdvance(TokenType.CLOSED_BRACKET_TOKEN, ")");
+        BlockSyntaxStatement whileBlockBody = parseBlockStatement();
+        return new WhileBlockSyntaxStatement(ifKeywordToken, openBracket, condition, closedBracket, whileBlockBody);
     }
 
     private IfBlockSyntaxStatement parseIfStatement() {

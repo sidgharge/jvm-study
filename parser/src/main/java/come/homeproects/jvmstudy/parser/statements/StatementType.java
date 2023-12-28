@@ -8,4 +8,5 @@ public enum StatementType {
     VARIABLE_REASSIGNMENT_STATEMENT,
     IF_STATEMENT,
     ELSE_STATEMENT,
+    WHILE_STATEMENT
 }

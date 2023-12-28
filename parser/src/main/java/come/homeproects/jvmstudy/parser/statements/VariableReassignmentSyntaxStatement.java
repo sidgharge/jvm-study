@@ -15,6 +15,11 @@ public record VariableReassignmentSyntaxStatement(
     }
 
     @Override
+    public String toString() {
+        return printString(0);
+    }
+
+    @Override
     public String printString(int indent) {
         return "  ".repeat(indent) + String.format("%s %s %s%s",
                 identifierToken.value(),
