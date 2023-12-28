@@ -20,13 +20,19 @@ public class TokenPrecedence {
         precedences.put(TokenType.SEMI_COLON_TOKEN, i);
         precedences.put(TokenType.CLOSED_CURLY_BRACKET_TOKEN, i++);
 
-        precedences.put(TokenType.DOUBLE_EQUALS_TOKEN, i);
-        precedences.put(TokenType.BANG_EQUALS_TOKEN, i++);
-
-        precedences.put(TokenType.PLUS_TOKEN, i);
-        precedences.put(TokenType.MINUS_TOKEN, i);
         precedences.put(TokenType.DOUBLE_AMPERSAND_TOKEN, i);
         precedences.put(TokenType.DOUBLE_PIPE_TOKEN, i++);
+
+        precedences.put(TokenType.DOUBLE_EQUALS_TOKEN, i);
+        precedences.put(TokenType.BANG_EQUALS_TOKEN, i);
+        precedences.put(TokenType.GREATER_THAN_TOKEN, i);
+        precedences.put(TokenType.GREATER_THAN_EQUALS_TOKEN, i);
+        precedences.put(TokenType.LESS_THAN_TOKEN, i);
+        precedences.put(TokenType.LESS_THAN_EQUALS_TOKEN, i++);
+
+
+        precedences.put(TokenType.PLUS_TOKEN, i);
+        precedences.put(TokenType.MINUS_TOKEN, i++);
 
         precedences.put(TokenType.START_TOKEN, i);
         precedences.put(TokenType.SLASH_TOKEN, i++);

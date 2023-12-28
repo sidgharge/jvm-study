@@ -1,5 +1,7 @@
 package come.homeproects.jvmstudy.parser.lexer;
 
+import java.util.Set;
+
 public enum TokenType {
 
     // Literals
@@ -23,6 +25,10 @@ public enum TokenType {
     DOUBLE_PIPE_TOKEN,
     DOUBLE_EQUALS_TOKEN,
     BANG_EQUALS_TOKEN,
+    GREATER_THAN_TOKEN,
+    GREATER_THAN_EQUALS_TOKEN,
+    LESS_THAN_TOKEN,
+    LESS_THAN_EQUALS_TOKEN,
     BANG_TOKEN,
     EQUALS_TOKEN,
 
@@ -39,10 +45,17 @@ public enum TokenType {
                 this == SLASH_TOKEN;
     }
 
+    private static final Set<TokenType> LOGICAL_OPERATORS = Set.of(
+            DOUBLE_EQUALS_TOKEN,
+            BANG_EQUALS_TOKEN,
+            GREATER_THAN_TOKEN,
+            GREATER_THAN_EQUALS_TOKEN,
+            LESS_THAN_TOKEN,
+            LESS_THAN_EQUALS_TOKEN,
+            DOUBLE_PIPE_TOKEN,
+            DOUBLE_AMPERSAND_TOKEN);
+
     public boolean isLogicalOperatorToken() {
-        return this == DOUBLE_EQUALS_TOKEN ||
-                this == BANG_EQUALS_TOKEN ||
-                this == DOUBLE_PIPE_TOKEN ||
-                this == DOUBLE_AMPERSAND_TOKEN;
+        return LOGICAL_OPERATORS.contains(this);
     }
 }

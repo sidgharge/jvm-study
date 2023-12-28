@@ -68,11 +68,38 @@ public class Lexer {
             return bangOrEqualsRelatedOperator();
         }
 
+        if (ch == '>' || ch == '<') {
+            return compareOperator();
+        }
+
         if (isAlphabetic(ch)) {
             return wordToken();
         }
 
         return singleCharacterToken(String.valueOf(ch), TokenType.BAD_SYNTAX_TOKEN);
+    }
+
+    private Token compareOperator() {
+        int lineNumber = text.lineNumber();
+        int startIndex = text.index();
+        char ch1 = text.currentAndAdvance();
+        char ch2 = text.peek();
+
+        if (ch1 == '>' && ch2 == '=') {
+            text.currentAndAdvance();
+            return new Token(">=", TokenType.GREATER_THAN_EQUALS_TOKEN, text.index() - 1, text.index(), lineNumber);
+        }
+        if (ch1 == '>' && ch2 != '=') {
+            return new Token(">", TokenType.GREATER_THAN_TOKEN, startIndex, startIndex, text.lineNumber());
+        }
+        if (ch1 == '<' && ch2 == '=') {
+            text.currentAndAdvance();
+            return new Token("<=", TokenType.LESS_THAN_EQUALS_TOKEN, text.index() - 1, text.index(), lineNumber);
+        }
+        if (ch1 == '<' && ch2 != '=') {
+            return new Token("<", TokenType.LESS_THAN_TOKEN, startIndex, startIndex, text.lineNumber());
+        }
+        return new Token(String.valueOf(ch1), TokenType.BAD_SYNTAX_TOKEN, startIndex, startIndex, lineNumber);
     }
 
     private Token singleCharacterToken(String value, TokenType type) {

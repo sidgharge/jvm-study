@@ -84,6 +84,10 @@ public class Evaluator {
             case DOUBLE_PIPE_TOKEN -> (boolean)evaluate(binaryExpression.left()) || (boolean)evaluate(binaryExpression.right());
             case DOUBLE_EQUALS_TOKEN -> evaluate(binaryExpression.left()).equals(evaluate(binaryExpression.right()));
             case BANG_EQUALS_TOKEN -> !evaluate(binaryExpression.left()).equals(evaluate(binaryExpression.right()));
+            case GREATER_THAN_TOKEN -> (int)evaluate(binaryExpression.left()) > (int)evaluate(binaryExpression.right());
+            case GREATER_THAN_EQUALS_TOKEN -> (int)evaluate(binaryExpression.left()) >= (int)evaluate(binaryExpression.right());
+            case LESS_THAN_TOKEN -> (int)evaluate(binaryExpression.left()) < (int)evaluate(binaryExpression.right());
+            case LESS_THAN_EQUALS_TOKEN -> (int)evaluate(binaryExpression.left()) <= (int)evaluate(binaryExpression.right());
             case EQUALS_TOKEN -> assignmentEvaluation(binaryExpression);
             default -> throw new RuntimeException("Unknown token: " + binaryExpression.operatorToken());
         };

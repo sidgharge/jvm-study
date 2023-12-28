@@ -16,7 +16,15 @@ public class Repl {
     }
 
     public Object evaluateToObject(String expression) {
-        BoundStatement boundStatement = new Binder().bind(expression);
+        return evaluateToObject(expression, false);
+    }
+
+    public Object evaluateToObject(String expression, boolean debug) {
+        Binder binder = new Binder();
+        BoundStatement boundStatement = binder.bind(expression);
+        if (debug) {
+            printDebugInfo(binder, boundStatement);
+        }
         return new Evaluator().evaluate(boundStatement);
     }
 

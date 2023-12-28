@@ -16,8 +16,9 @@ public class ManualTest {
 //        String expression = "((15 - 3) - 1);";
 
         String expression = """
-                var a = 10;
-                a;
+                {
+                    1 + 4 == 3 + 2;
+                }
                 """;
 
         Binder binder = new Binder();
