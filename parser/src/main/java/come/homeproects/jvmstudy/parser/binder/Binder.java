@@ -9,6 +9,7 @@ import come.homeproects.jvmstudy.parser.binder.expressions.UnaryBoundExpression;
 import come.homeproects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.IfBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableReassignmentBoundStatement;
 import come.homeproects.jvmstudy.parser.diagnostics.Diagnostics;
@@ -20,6 +21,7 @@ import come.homeproects.jvmstudy.parser.lexer.Token;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
 import come.homeproects.jvmstudy.parser.statements.BlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.IfBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.SyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.VariableDeclarationSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.VariableReassignmentSyntaxStatement;
@@ -60,8 +62,24 @@ public class Binder {
             case ExpressionSyntaxStatement expressionSyntaxStatement -> expressionSyntaxStatement(expressionSyntaxStatement);
             case VariableDeclarationSyntaxStatement variableDeclarationSyntaxStatement -> variableDeclarationSyntaxStatement(variableDeclarationSyntaxStatement);
             case VariableReassignmentSyntaxStatement variableReassignmentSyntaxStatement -> variableReassignmentSyntaxStatement(variableReassignmentSyntaxStatement);
+            case IfBlockSyntaxStatement ifBlockSyntaxStatement -> ifBlockSyntaxStatement(ifBlockSyntaxStatement);
             default -> throw new RuntimeException("Unhandled statement type: " + statement.statementType());
         };
+    }
+
+    private IfBlockBoundStatement ifBlockSyntaxStatement(IfBlockSyntaxStatement ifBlockSyntaxStatement) {
+        BoundExpression condition = bind(ifBlockSyntaxStatement.condition());
+        if(!condition.type().equals(boolean.class)) {
+            diagnostics.addDiagnostic(ifBlockSyntaxStatement.ifKeywordToken(), "Condition inside if expected of type boolean, got %s", condition.type());
+        }
+        BoundStatement body = bind(ifBlockSyntaxStatement.ifBlockBody());
+        return new IfBlockBoundStatement(
+                ifBlockSyntaxStatement.ifKeywordToken(),
+                ifBlockSyntaxStatement.openBracket(),
+                condition,
+                ifBlockSyntaxStatement.closedBracket(),
+                body
+        );
     }
 
     private VariableReassignmentBoundStatement variableReassignmentSyntaxStatement(VariableReassignmentSyntaxStatement variableReassignmentSyntaxStatement) {

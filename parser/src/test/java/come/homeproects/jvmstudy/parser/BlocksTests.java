@@ -80,4 +80,21 @@ public class BlocksTests {
         Object result = repl.evaluateToObject(expression);
         Assertions.assertThat(result).isEqualTo(60);
     }
+
+    @Test
+    public void ifBlockTest() {
+        String expression = """
+                {
+                    var a = 10;
+                    {
+                        if(a < 15 && a > 6) {
+                            a = 20;
+                        }
+                    }
+                    a = a;
+                }
+                """;
+        Object result = repl.evaluateToObject(expression);
+        Assertions.assertThat(result).isEqualTo(20);
+    }
 }

@@ -19,9 +19,11 @@ public class ManualTest {
                 {
                     var a = 10;
                     {
-                        a = a + 5;
-                        var b = a + 5;
+                       if(a < 11) {
+                        a = 20;
+                       }
                     }
+                    a = a;
                 }
                 """;
 

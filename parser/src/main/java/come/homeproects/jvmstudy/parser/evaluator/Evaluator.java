@@ -7,6 +7,7 @@ import come.homeproects.jvmstudy.parser.binder.expressions.UnaryBoundExpression;
 import come.homeproects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.IfBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableReassignmentBoundStatement;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
@@ -33,9 +34,17 @@ public class Evaluator {
             case BlockBoundStatement blockBoundStatement -> blockBoundStatement(blockBoundStatement);
             case VariableDeclarationBoundStatement variableDeclarationBoundStatement -> variableDeclarationBoundStatement(variableDeclarationBoundStatement);
             case VariableReassignmentBoundStatement variableReassignmentBoundStatement -> variableReassignmentBoundStatement(variableReassignmentBoundStatement);
+            case IfBlockBoundStatement ifBlockBoundStatement-> ifBlockBoundStatement(ifBlockBoundStatement);
             default -> throw new RuntimeException("Unhandled statement type: " + statement.getClass());
         }
         return lastValue;
+    }
+
+    private void ifBlockBoundStatement(IfBlockBoundStatement ifBlockBoundStatement) {
+        boolean condition = (boolean) evaluate(ifBlockBoundStatement.condition());
+        if (condition) {
+            evaluate(ifBlockBoundStatement.ifBlockBody());
+        }
     }
 
     private void variableReassignmentBoundStatement(VariableReassignmentBoundStatement variableReassignmentBoundStatement) {

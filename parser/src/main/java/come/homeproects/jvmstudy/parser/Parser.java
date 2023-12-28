@@ -7,6 +7,7 @@ import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
 import come.homeproects.jvmstudy.parser.expressions.LiteralSyntaxExpression;
 import come.homeproects.jvmstudy.parser.statements.BlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.IfBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.SyntaxStatement;
 import come.homeproects.jvmstudy.parser.expressions.UnarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.lexer.Lexer;
@@ -67,12 +68,22 @@ public class Parser {
             case OPEN_CURLY_BRACKET_TOKEN -> parseBlockStatement();
             case KEYWORD_VAR_TOKEN -> parseVariableDeclaration();
             case IDENTIFIER_TOKEN -> parseVariableReassignment();
+            case KEYWORD_IF_TOKEN -> parseIfStatement();
             default -> parseExpressionStatement();
         };
     }
 
+    private SyntaxStatement parseIfStatement() {
+        Token ifKeywordToken = matchAndAdvance(TokenType.KEYWORD_IF_TOKEN, "if");
+        Token openBracket = matchAndAdvance(TokenType.OPEN_BRACKET_TOKEN, "(");
+        SyntaxExpression condition = parseExpression();
+        Token closedBracket = matchAndAdvance(TokenType.CLOSED_BRACKET_TOKEN, ")");
+        BlockSyntaxStatement ifBlockBody = parseBlockStatement();
+        return new IfBlockSyntaxStatement(ifKeywordToken, openBracket, condition, closedBracket, ifBlockBody);
+    }
+
     private SyntaxStatement parseVariableReassignment() {
-        Token identifierToken = matchAndAdvance(TokenType.IDENTIFIER_TOKEN, "");
+        Token identifierToken = matchAndAdvance(TokenType.IDENTIFIER_TOKEN, "$dummy");
         Token equalsToken = matchAndAdvance(TokenType.EQUALS_TOKEN, "=");
         SyntaxExpression expression = parseExpression();
         Token semiColonToken = matchAndAdvance(TokenType.SEMI_COLON_TOKEN, ";");
@@ -81,7 +92,7 @@ public class Parser {
 
     private SyntaxStatement parseVariableDeclaration() {
         Token varToken = matchAndAdvance(TokenType.KEYWORD_VAR_TOKEN, "var");
-        Token identifierToken = matchAndAdvance(TokenType.IDENTIFIER_TOKEN, "");
+        Token identifierToken = matchAndAdvance(TokenType.IDENTIFIER_TOKEN, "$dummy");
         Token equalsToken = matchAndAdvance(TokenType.EQUALS_TOKEN, "=");
         SyntaxExpression expression = parseExpression();
         Token semiColonToken = matchAndAdvance(TokenType.SEMI_COLON_TOKEN, ";");
@@ -95,17 +106,17 @@ public class Parser {
     }
 
     private BlockSyntaxStatement parseBlockStatement() {
-        Token openCurlyBracketToken = current();
+        Token openCurlyBracketToken = matchAndAdvance(TokenType.OPEN_CURLY_BRACKET_TOKEN, "{");
         List<SyntaxStatement> statements = new ArrayList<>();
-        advance();
-        Token token = current();
-        while (!token.type().equals(TokenType.CLOSED_CURLY_BRACKET_TOKEN)) {
+        while (!isAtEnd()) {
+            if (current().type().equals(TokenType.CLOSED_CURLY_BRACKET_TOKEN)) {
+                break;
+            }
             SyntaxStatement statement = parseStatement();
             statements.add(statement);
-            token = current();
         }
-        advance();
-        return new BlockSyntaxStatement(openCurlyBracketToken, token, statements);
+        Token closedCurlyBracketToken = matchAndAdvance(TokenType.CLOSED_CURLY_BRACKET_TOKEN, "}");
+        return new BlockSyntaxStatement(openCurlyBracketToken, closedCurlyBracketToken, statements);
     }
 
     private SyntaxExpression parseExpression() {
@@ -197,7 +208,7 @@ public class Parser {
     }
 
     private boolean isAtEnd() {
-        return index >= tokens.size();
+        return index >= tokens.size() - 1;
     }
 
     private void tokenize() {
