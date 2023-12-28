@@ -8,6 +8,7 @@ import come.homeproects.jvmstudy.parser.binder.expressions.LiteralBoundExpressio
 import come.homeproects.jvmstudy.parser.binder.expressions.UnaryBoundExpression;
 import come.homeproects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.ElseBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.IfBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
@@ -20,6 +21,7 @@ import come.homeproects.jvmstudy.parser.expressions.UnarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.lexer.Token;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
 import come.homeproects.jvmstudy.parser.statements.BlockSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.ElseBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.IfBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.SyntaxStatement;
@@ -73,13 +75,21 @@ public class Binder {
             diagnostics.addDiagnostic(ifBlockSyntaxStatement.ifKeywordToken(), "Condition inside `if` should evaluate to a boolean, but got `%s`", condition.type());
         }
         BoundStatement body = bind(ifBlockSyntaxStatement.ifBlockBody());
+        Optional<ElseBlockBoundStatement> elseBody = ifBlockSyntaxStatement.elseBlockBody()
+                .map(this::elseBlockSyntaxStatement);
         return new IfBlockBoundStatement(
                 ifBlockSyntaxStatement.ifKeywordToken(),
                 ifBlockSyntaxStatement.openBracket(),
                 condition,
                 ifBlockSyntaxStatement.closedBracket(),
-                body
+                body,
+                elseBody
         );
+    }
+
+    private ElseBlockBoundStatement elseBlockSyntaxStatement(ElseBlockSyntaxStatement elseBlockSyntaxStatement) {
+        BoundStatement elseBlockBody = bind(elseBlockSyntaxStatement.elseBlockBody());
+        return new ElseBlockBoundStatement(elseBlockSyntaxStatement.elseKeywordToken(), elseBlockBody);
     }
 
     private VariableReassignmentBoundStatement variableReassignmentSyntaxStatement(VariableReassignmentSyntaxStatement variableReassignmentSyntaxStatement) {
@@ -175,12 +185,12 @@ public class Binder {
         switch (operator.type()) {
             case PLUS_TOKEN, MINUS_TOKEN -> {
                 if (!expression.type().equals(int.class)) {
-                    diagnostics.addDiagnostic(operator, "Operator '%s' is not valid for '%s' at index %d", operator.value(), expression.type(), operator.startIndex());
+                    diagnostics.addDiagnostic(operator, "Operator '%s' is not valid for '%s'", operator.value(), expression.type());
                 }
             }
             case BANG_TOKEN -> {
                 if (!expression.type().equals(boolean.class)) {
-                    diagnostics.addDiagnostic(operator, "Operator '%s' is not valid for '%s' at index %d", operator.value(), expression.type(), operator.startIndex());
+                    diagnostics.addDiagnostic(operator, "Operator '%s' is not valid for '%s'", operator.value(), expression.type());
                 }
             }
         }
@@ -205,7 +215,7 @@ public class Binder {
             return new LiteralBoundExpression(token, type.get());
         }
 
-        this.diagnostics.addDiagnostic(token, "Unknown syntax '%s' at index %d", token.value(), token.startIndex());
+        this.diagnostics.addDiagnostic(token, "Unknown syntax '%s'");
         return new NoOpBoundExpression(token.value());
     }
 

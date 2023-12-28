@@ -6,6 +6,7 @@ import come.homeproects.jvmstudy.parser.binder.expressions.LiteralBoundExpressio
 import come.homeproects.jvmstudy.parser.binder.expressions.UnaryBoundExpression;
 import come.homeproects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.ElseBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.IfBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
@@ -44,6 +45,8 @@ public class Evaluator {
         boolean condition = (boolean) evaluate(ifBlockBoundStatement.condition());
         if (condition) {
             evaluate(ifBlockBoundStatement.ifBlockBody());
+        } else {
+            ifBlockBoundStatement.elseBlockBody().map(ElseBlockBoundStatement::elseBlockBody).ifPresent(this::evaluate);
         }
     }
 

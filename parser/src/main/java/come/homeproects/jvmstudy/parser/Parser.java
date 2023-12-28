@@ -6,6 +6,7 @@ import come.homeproects.jvmstudy.parser.expressions.BinarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
 import come.homeproects.jvmstudy.parser.expressions.LiteralSyntaxExpression;
 import come.homeproects.jvmstudy.parser.statements.BlockSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.ElseBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.IfBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.SyntaxStatement;
@@ -18,6 +19,7 @@ import come.homeproects.jvmstudy.parser.statements.VariableReassignmentSyntaxSta
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Parser {
 
@@ -73,13 +75,24 @@ public class Parser {
         };
     }
 
-    private SyntaxStatement parseIfStatement() {
+    private IfBlockSyntaxStatement parseIfStatement() {
         Token ifKeywordToken = matchAndAdvance(TokenType.KEYWORD_IF_TOKEN, "if");
         Token openBracket = matchAndAdvance(TokenType.OPEN_BRACKET_TOKEN, "(");
         SyntaxExpression condition = parseExpression();
         Token closedBracket = matchAndAdvance(TokenType.CLOSED_BRACKET_TOKEN, ")");
         BlockSyntaxStatement ifBlockBody = parseBlockStatement();
-        return new IfBlockSyntaxStatement(ifKeywordToken, openBracket, condition, closedBracket, ifBlockBody);
+        Optional<ElseBlockSyntaxStatement> elseStatement = parseElseStatement();
+        return new IfBlockSyntaxStatement(ifKeywordToken, openBracket, condition, closedBracket, ifBlockBody, elseStatement);
+    }
+
+    private Optional<ElseBlockSyntaxStatement> parseElseStatement() {
+        if (!current().type().equals(TokenType.KEYWORD_ELSE_TOKEN)) {
+            return Optional.empty();
+        }
+        Token elseKeywordToken = matchAndAdvance(TokenType.KEYWORD_ELSE_TOKEN, "else");
+        BlockSyntaxStatement elseBlockBody = parseBlockStatement();
+        return Optional.of(new ElseBlockSyntaxStatement(elseKeywordToken, elseBlockBody));
+
     }
 
     private SyntaxStatement parseVariableReassignment() {
@@ -174,7 +187,7 @@ public class Parser {
         }
 
         this.diagnostics.addDiagnostic(token, "Invalid token: '%s'", token.value());
-        return new LiteralSyntaxExpression(new Token("", TokenType.NUMBER_TOKEN, token.startIndex(), token.endIndex(), token.lineNumber()));
+        return new LiteralSyntaxExpression(new Token(token.value(), TokenType.BAD_SYNTAX_TOKEN, token.startIndex(), token.endIndex(), token.lineNumber()));
     }
 
     private SyntaxExpression parseBracketExpression() {

@@ -1,16 +1,17 @@
 package come.homeproects.jvmstudy.parser.binder.statements;
 
 import come.homeproects.jvmstudy.parser.binder.expressions.BoundExpression;
-import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
 import come.homeproects.jvmstudy.parser.lexer.Token;
-import come.homeproects.jvmstudy.parser.statements.BlockSyntaxStatement;
+
+import java.util.Optional;
 
 public record IfBlockBoundStatement(
         Token ifKeywordToken,
         Token openBracket,
         BoundExpression condition,
         Token closedBracket,
-        BoundStatement ifBlockBody) implements BoundStatement {
+        BoundStatement ifBlockBody,
+        Optional<ElseBlockBoundStatement> elseBlockBody) implements BoundStatement {
 
     @Override
     public String toString() {
@@ -19,11 +20,12 @@ public record IfBlockBoundStatement(
 
     @Override
     public String prettyString(int indent) {
-        return "  ".repeat(indent) + String.format("%s %s%s%s\n%s",
+        return "  ".repeat(indent) + String.format("%s %s%s%s\n%s%s",
                 ifKeywordToken.value(),
                 openBracket.value(),
                 condition.toString(),
                 closedBracket.value(),
-                ifBlockBody.prettyString(indent));
+                ifBlockBody.prettyString(indent),
+                elseBlockBody.map(e -> e.prettyString(indent)).orElse(""));
     }
 }

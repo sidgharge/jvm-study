@@ -12,6 +12,7 @@ public class Grammar {
             case "||" -> TokenType.DOUBLE_PIPE_TOKEN;
             case "var" -> TokenType.KEYWORD_VAR_TOKEN;
             case "if" -> TokenType.KEYWORD_IF_TOKEN;
+            case "else" -> TokenType.KEYWORD_ELSE_TOKEN;
             default -> TokenType.IDENTIFIER_TOKEN;
         };
     }

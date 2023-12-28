@@ -19,8 +19,10 @@ public class ManualTest {
                 {
                     var a = 10;
                     {
-                       if(a > 5) {
+                       if(a >= 10) {
                         a = 20;
+                       } else {
+                        a = 5;
                        }
                     }
                     a = a;
