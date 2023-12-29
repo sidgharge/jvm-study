@@ -5,6 +5,7 @@ import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
 import come.homeproects.jvmstudy.parser.diagnostics.Diagnostic;
 import come.homeproects.jvmstudy.parser.evaluator.Evaluator;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -49,12 +50,19 @@ public class Repl {
                 if (line.equals("q")) {
                     break;
                 }
-                if (line.equals("#debug")) {
+                if (line.equals("debug")) {
                     debug = !debug;
                     System.out.println("debug = " + debug);
                     continue;
                 }
-                if (!line.isEmpty()) {
+                if (line.equals("cls") || line.equals("clear")) {
+                    try {
+                        new ProcessBuilder(line).inheritIO().start().exitValue();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                if (line.isEmpty() || line.lastIndexOf('\'') != line.length() - 1) {
                     builder.append(line);
                     continue;
                 }

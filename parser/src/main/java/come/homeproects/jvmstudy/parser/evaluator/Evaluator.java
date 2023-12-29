@@ -34,9 +34,9 @@ public class Evaluator {
     }
     
     public Object evaluate(BoundStatement statement) {
-
-
-        return boundStatement(statement);
+        Object result = boundStatement(statement);
+        lastValue = null;
+        return result;
     } 
     
     public Object boundStatement(BoundStatement statement) {
