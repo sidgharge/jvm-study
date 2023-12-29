@@ -1,8 +1,7 @@
 package come.homeproects.jvmstudy.parser.binder.expressions;
 
 import come.homeproects.jvmstudy.parser.lexer.Token;
-
-import java.lang.reflect.Type;
+import come.homeproects.jvmstudy.parser.types.Type;
 
 public record UnaryBoundExpression(Token operatorToken, Type type, BoundExpression operand) implements BoundExpression {
 

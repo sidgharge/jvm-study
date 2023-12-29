@@ -1,8 +1,7 @@
 package come.homeproects.jvmstudy.parser.binder.expressions;
 
 import come.homeproects.jvmstudy.parser.lexer.Token;
-
-import java.lang.reflect.Type;
+import come.homeproects.jvmstudy.parser.types.Type;
 
 public record LiteralBoundExpression(Token token, Type type) implements BoundExpression {
 

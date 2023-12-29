@@ -30,8 +30,8 @@ import come.homeproects.jvmstudy.parser.statements.SyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.VariableDeclarationSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.VariableReassignmentSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.WhileBlockSyntaxStatement;
+import come.homeproects.jvmstudy.parser.types.Type;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -76,7 +76,7 @@ public class Binder {
 
     private BoundStatement whileBlockSyntaxStatement(WhileBlockSyntaxStatement whileBlockSyntaxStatement) {
         BoundExpression condition = bind(whileBlockSyntaxStatement.condition());
-        if(!condition.type().equals(boolean.class)) {
+        if(!condition.type().equals(Type.BOOLEAN)) {
             diagnostics.addDiagnostic(whileBlockSyntaxStatement.whileKeywordToken(), "Condition inside `while` should evaluate to a boolean, but got `%s`", condition.type());
         }
         BlockBoundStatement body = blockSyntaxStatement(whileBlockSyntaxStatement.whileBlockBody());
@@ -91,7 +91,7 @@ public class Binder {
 
     private IfBlockBoundStatement ifBlockSyntaxStatement(IfBlockSyntaxStatement ifBlockSyntaxStatement) {
         BoundExpression condition = bind(ifBlockSyntaxStatement.condition());
-        if(!condition.type().equals(boolean.class)) {
+        if(!condition.type().equals(Type.BOOLEAN)) {
             diagnostics.addDiagnostic(ifBlockSyntaxStatement.ifKeywordToken(), "Condition inside `if` should evaluate to a boolean, but got `%s`", condition.type());
         }
         BlockBoundStatement body = blockSyntaxStatement(ifBlockSyntaxStatement.ifBlockBody());
@@ -181,18 +181,24 @@ public class Binder {
         BoundExpression left = bind(binaryExpression.left());
         BoundExpression right = bind(binaryExpression.right());
         Token operatorToken = binaryExpression.token();
+
+        if (left.type().equals(Type.UNKNOWN) || right.type().equals(Type.UNKNOWN)) {
+            return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.UNKNOWN);
+        }
+
         if (!left.type().equals(right.type())) {
             diagnostics.addDiagnostic(operatorToken, "Operand '%s' can not be used with '%s' and '%s'", operatorToken.value(), left.type(), right.type());
-            return new BinaryBoundExpression(left, right, binaryExpression.token(), left.type());
+            return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.UNKNOWN);
         }
         if (binaryExpression.token().type().isMathematicalOperatorToken()) {
-            if (!left.type().equals(int.class) || !right.type().equals(int.class)) {
+            if (!left.type().equals(Type.INT) || !right.type().equals(Type.INT)) {
                 diagnostics.addDiagnostic(operatorToken, "Operand '%s' can not be used with '%s' and '%s'", binaryExpression.token().value(), left.type(), right.type());
+                return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.UNKNOWN);
             }
-            return new BinaryBoundExpression(left, right, binaryExpression.token(), left.type());
+            return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.INT);
         }
         if (binaryExpression.token().type().isLogicalOperatorToken()) {
-            return new BinaryBoundExpression(left, right, binaryExpression.token(), boolean.class);
+            return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.BOOLEAN);
         }
         diagnostics.addDiagnostic(operatorToken, "Operand '%s' is not implemented to use with '%s' and '%s'", binaryExpression.token().value(), left.type(), right.type());
         return new BinaryBoundExpression(left, right, binaryExpression.token(), left.type());
@@ -204,12 +210,12 @@ public class Binder {
 
         switch (operator.type()) {
             case PLUS_TOKEN, MINUS_TOKEN -> {
-                if (!expression.type().equals(int.class)) {
+                if (!expression.type().equals(Type.INT)) {
                     diagnostics.addDiagnostic(operator, "Operator '%s' is not valid for '%s'", operator.value(), expression.type());
                 }
             }
             case BANG_TOKEN -> {
-                if (!expression.type().equals(boolean.class)) {
+                if (!expression.type().equals(Type.BOOLEAN)) {
                     diagnostics.addDiagnostic(operator, "Operator '%s' is not valid for '%s'", operator.value(), expression.type());
                 }
             }
@@ -221,10 +227,10 @@ public class Binder {
         Token token = literalExpression.token();
 
         if (token.type().equals(TokenType.NUMBER_TOKEN)) {
-            return new LiteralBoundExpression(token, int.class);
+            return new LiteralBoundExpression(token, Type.INT);
         }
         if (token.type().equals(TokenType.KEYWORD_TRUE_TOKEN) || token.type().equals(TokenType.KEYWORD_FALSE_TOKEN)) {
-            return new LiteralBoundExpression(token, boolean.class);
+            return new LiteralBoundExpression(token, Type.BOOLEAN);
         }
         if (token.type() == TokenType.IDENTIFIER_TOKEN) {
             Optional<Type> type = getTypeFromStack(token);

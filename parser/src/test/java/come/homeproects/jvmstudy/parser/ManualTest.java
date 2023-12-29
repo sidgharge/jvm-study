@@ -13,9 +13,9 @@ public class ManualTest {
 
     @Test
     public void test() {
-//        String expression = "((15 - 3) - 1);";
+        String expression = "5 + true && 5 == true;";
 
-        String expression = """
+        String expression2 = """
                 {
                     var a = 1;
                     var b = true;

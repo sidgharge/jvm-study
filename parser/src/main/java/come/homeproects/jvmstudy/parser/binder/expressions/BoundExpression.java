@@ -1,6 +1,6 @@
 package come.homeproects.jvmstudy.parser.binder.expressions;
 
-import java.lang.reflect.Type;
+import come.homeproects.jvmstudy.parser.types.Type;
 
 public interface BoundExpression {
 
@@ -10,12 +10,12 @@ public interface BoundExpression {
 
         @Override
         public Type type() {
-            return Object.class;
+            return Type.UNKNOWN;
         }
 
         @Override
         public String toString() {
-            return dummyValue;
+            return Type.UNKNOWN.name();
         }
     }
 }

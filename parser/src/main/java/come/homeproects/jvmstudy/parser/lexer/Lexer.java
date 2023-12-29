@@ -87,14 +87,14 @@ public class Lexer {
 
         if (ch1 == '>' && ch2 == '=') {
             text.currentAndAdvance();
-            return new Token(">=", TokenType.GREATER_THAN_EQUALS_TOKEN, text.index() - 1, text.index(), lineNumber);
+            return new Token(">=", TokenType.GREATER_THAN_EQUALS_TOKEN, startIndex, startIndex + 2, lineNumber);
         }
         if (ch1 == '>' && ch2 != '=') {
             return new Token(">", TokenType.GREATER_THAN_TOKEN, startIndex, startIndex, text.lineNumber());
         }
         if (ch1 == '<' && ch2 == '=') {
             text.currentAndAdvance();
-            return new Token("<=", TokenType.LESS_THAN_EQUALS_TOKEN, text.index() - 1, text.index(), lineNumber);
+            return new Token("<=", TokenType.LESS_THAN_EQUALS_TOKEN, startIndex, startIndex + 2, lineNumber);
         }
         if (ch1 == '<' && ch2 != '=') {
             return new Token("<", TokenType.LESS_THAN_TOKEN, startIndex, startIndex, text.lineNumber());
@@ -115,11 +115,11 @@ public class Lexer {
         char ch2 = text.peek();
         if (ch1 == '=' && ch2 == '=') {
             text.currentAndAdvance();
-            return new Token("==", TokenType.DOUBLE_EQUALS_TOKEN, text.index() - 1, text.index(), lineNumber);
+            return new Token("==", TokenType.DOUBLE_EQUALS_TOKEN, startIndex, startIndex + 2, lineNumber);
         }
         if (ch1 == '!' && ch2 == '=') {
             text.currentAndAdvance();
-            return new Token("!=", TokenType.BANG_EQUALS_TOKEN, text.index() - 1, text.index(), lineNumber);
+            return new Token("!=", TokenType.BANG_EQUALS_TOKEN, startIndex, startIndex + 2, lineNumber);
         }
         if (ch1 == '!' && ch2 != '=') {
             return new Token("!", TokenType.BANG_TOKEN, startIndex, startIndex, text.lineNumber());

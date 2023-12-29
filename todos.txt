@@ -1,2 +1,3 @@
 - Think about binder and error messages propagating
 - better errors
+ introduce our own types
