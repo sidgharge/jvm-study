@@ -21,6 +21,7 @@ import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
 import come.homeproects.jvmstudy.parser.expressions.UnarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.lexer.Token;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
+import come.homeproects.jvmstudy.parser.lowerer.Lowerer;
 import come.homeproects.jvmstudy.parser.statements.BlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.ElseBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
@@ -57,7 +58,8 @@ public class Binder {
         this.syntaxStatement = parser.parse();
         this.tokens = parser.tokens();
         parser.diagnostics().errors().forEach(diagnostics::add);
-        return bind(syntaxStatement);
+        BoundStatement boundStatement = bind(syntaxStatement);
+        return new Lowerer().lower(boundStatement);
     }
 
     private BoundStatement bind(SyntaxStatement statement) {
@@ -92,7 +94,7 @@ public class Binder {
         if(!condition.type().equals(boolean.class)) {
             diagnostics.addDiagnostic(ifBlockSyntaxStatement.ifKeywordToken(), "Condition inside `if` should evaluate to a boolean, but got `%s`", condition.type());
         }
-        BoundStatement body = bind(ifBlockSyntaxStatement.ifBlockBody());
+        BlockBoundStatement body = blockSyntaxStatement(ifBlockSyntaxStatement.ifBlockBody());
         Optional<ElseBlockBoundStatement> elseBody = ifBlockSyntaxStatement.elseBlockBody()
                 .map(this::elseBlockSyntaxStatement);
         return new IfBlockBoundStatement(
@@ -106,7 +108,7 @@ public class Binder {
     }
 
     private ElseBlockBoundStatement elseBlockSyntaxStatement(ElseBlockSyntaxStatement elseBlockSyntaxStatement) {
-        BoundStatement elseBlockBody = bind(elseBlockSyntaxStatement.elseBlockBody());
+        BlockBoundStatement elseBlockBody = blockSyntaxStatement(elseBlockSyntaxStatement.elseBlockBody());
         return new ElseBlockBoundStatement(elseBlockSyntaxStatement.elseKeywordToken(), elseBlockBody);
     }
 

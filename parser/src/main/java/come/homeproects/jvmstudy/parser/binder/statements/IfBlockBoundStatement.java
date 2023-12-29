@@ -10,7 +10,7 @@ public record IfBlockBoundStatement(
         Token openBracket,
         BoundExpression condition,
         Token closedBracket,
-        BoundStatement ifBlockBody,
+        BlockBoundStatement ifBlockBody,
         Optional<ElseBlockBoundStatement> elseBlockBody) implements BoundStatement {
 
     @Override

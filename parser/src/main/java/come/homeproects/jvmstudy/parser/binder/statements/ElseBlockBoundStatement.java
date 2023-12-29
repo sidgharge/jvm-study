@@ -4,7 +4,7 @@ import come.homeproects.jvmstudy.parser.lexer.Token;
 
 public record ElseBlockBoundStatement(
         Token elseKeywordToken,
-        BoundStatement elseBlockBody) implements BoundStatement {
+        BlockBoundStatement elseBlockBody) implements BoundStatement {
 
     @Override
     public String toString() {

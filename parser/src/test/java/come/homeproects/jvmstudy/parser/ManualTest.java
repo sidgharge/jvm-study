@@ -16,15 +16,13 @@ public class ManualTest {
 //        String expression = "((15 - 3) - 1);";
 
         String expression = """
-                {
-                    var a = 11;
-                    {
-                       while(a < 20) {
-                            a = a + 2;
-                       }
-                    }
-                    a = a;
+                var a = 10;
+                if(a > 15) {
+                    a = 20;
+                } else {
+                    a = 30;
                 }
+                a = a;
                 """;
 
         Binder binder = new Binder();
