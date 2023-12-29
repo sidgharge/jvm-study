@@ -187,20 +187,30 @@ public class Binder {
         }
 
         if (!left.type().equals(right.type())) {
-            diagnostics.addDiagnostic(operatorToken, "Operand '%s' can not be used with '%s' and '%s'", operatorToken.value(), left.type(), right.type());
+            diagnostics.addDiagnostic(operatorToken, "Operator '%s' can not be used with '%s' and '%s'", operatorToken.value(), left.type(), right.type());
             return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.UNKNOWN);
         }
+
         if (binaryExpression.token().type().isMathematicalOperatorToken()) {
             if (!left.type().equals(Type.INT) || !right.type().equals(Type.INT)) {
-                diagnostics.addDiagnostic(operatorToken, "Operand '%s' can not be used with '%s' and '%s'", binaryExpression.token().value(), left.type(), right.type());
+                diagnostics.addDiagnostic(operatorToken, "Operator '%s' can not be used with '%s' and '%s'", binaryExpression.token().value(), left.type(), right.type());
                 return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.UNKNOWN);
             }
             return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.INT);
         }
+
+        if (binaryExpression.token().type().isOnlyBooleanLogicalOperator()) {
+            if (!left.type().equals(Type.BOOLEAN) || !right.type().equals(Type.BOOLEAN)) {
+                diagnostics.addDiagnostic(operatorToken, "Operator '%s' can not be used with '%s' and '%s'", binaryExpression.token().value(), left.type(), right.type());
+                return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.UNKNOWN);
+            }
+            return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.BOOLEAN);
+        }
+
         if (binaryExpression.token().type().isLogicalOperatorToken()) {
             return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.BOOLEAN);
         }
-        diagnostics.addDiagnostic(operatorToken, "Operand '%s' is not implemented to use with '%s' and '%s'", binaryExpression.token().value(), left.type(), right.type());
+        diagnostics.addDiagnostic(operatorToken, "Operator '%s' is not implemented to use with '%s' and '%s'", binaryExpression.token().value(), left.type(), right.type());
         return new BinaryBoundExpression(left, right, binaryExpression.token(), left.type());
     }
 

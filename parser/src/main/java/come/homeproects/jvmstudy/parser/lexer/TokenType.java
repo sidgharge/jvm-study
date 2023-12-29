@@ -54,11 +54,13 @@ public enum TokenType {
             GREATER_THAN_TOKEN,
             GREATER_THAN_EQUALS_TOKEN,
             LESS_THAN_TOKEN,
-            LESS_THAN_EQUALS_TOKEN,
-            DOUBLE_PIPE_TOKEN,
-            DOUBLE_AMPERSAND_TOKEN);
+            LESS_THAN_EQUALS_TOKEN);
 
     public boolean isLogicalOperatorToken() {
         return LOGICAL_OPERATORS.contains(this);
+    }
+
+    public boolean isOnlyBooleanLogicalOperator() {
+        return this == DOUBLE_PIPE_TOKEN || this == DOUBLE_AMPERSAND_TOKEN;
     }
 }

@@ -13,7 +13,7 @@ public class ManualTest {
 
     @Test
     public void test() {
-        String expression = "5 + true && 5 == true;";
+        String expression = "5 || 2 && true == 3 || 5 == 4;";
 
         String expression2 = """
                 {
