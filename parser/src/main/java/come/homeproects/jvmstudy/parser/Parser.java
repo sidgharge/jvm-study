@@ -8,6 +8,7 @@ import come.homeproects.jvmstudy.parser.expressions.LiteralSyntaxExpression;
 import come.homeproects.jvmstudy.parser.statements.BlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.ElseBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.ForBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.IfBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.SyntaxStatement;
 import come.homeproects.jvmstudy.parser.expressions.UnarySyntaxExpression;
@@ -73,8 +74,22 @@ public class Parser {
             case IDENTIFIER_TOKEN -> parseVariableReassignment();
             case KEYWORD_IF_TOKEN -> parseIfStatement();
             case KEYWORD_WHILE_TOKEN -> parseWhileStatement();
+            case KEYWORD_FOR_TOKEN -> parseForStatement();
             default -> parseExpressionStatement();
         };
+    }
+
+    private ForBlockSyntaxStatement parseForStatement() {
+        Token forKeywordToken = matchAndAdvance(TokenType.KEYWORD_FOR_TOKEN, "for");
+        Token openBracket = matchAndAdvance(TokenType.OPEN_BRACKET_TOKEN, "(");
+        SyntaxStatement initializer = parseStatement();
+        ExpressionSyntaxStatement condition = parseExpressionStatement();
+
+        VariableReassignmentSyntaxStatement stepper = parseVariableReassignment(false);
+        Token closedBracket = matchAndAdvance(TokenType.CLOSED_BRACKET_TOKEN, ")");
+        BlockSyntaxStatement forBlockBody = parseBlockStatement();
+
+        return new ForBlockSyntaxStatement(forKeywordToken, openBracket, initializer, condition, stepper, closedBracket, forBlockBody);
     }
 
     private WhileBlockSyntaxStatement parseWhileStatement() {
@@ -106,11 +121,19 @@ public class Parser {
 
     }
 
-    private SyntaxStatement parseVariableReassignment() {
+    private VariableReassignmentSyntaxStatement parseVariableReassignment() {
+        return parseVariableReassignment(true);
+    }
+
+    private VariableReassignmentSyntaxStatement parseVariableReassignment(boolean isSemicolonExpected) {
         Token identifierToken = matchAndAdvance(TokenType.IDENTIFIER_TOKEN, "$dummy");
         Token equalsToken = matchAndAdvance(TokenType.EQUALS_TOKEN, "=");
         SyntaxExpression expression = parseExpression();
-        Token semiColonToken = matchAndAdvance(TokenType.SEMI_COLON_TOKEN, ";");
+
+        Token semiColonToken = current();
+        if (semiColonToken.type().equals(TokenType.SEMI_COLON_TOKEN) || isSemicolonExpected) {
+            matchAndAdvance(TokenType.SEMI_COLON_TOKEN, ";");
+        }
         return new VariableReassignmentSyntaxStatement(identifierToken, equalsToken, expression, semiColonToken);
     }
 

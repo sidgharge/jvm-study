@@ -3,17 +3,17 @@ package come.homeproects.jvmstudy.parser;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class WhileBlocksTests {
+public class ForBlocksTests {
 
     private final Repl repl = new Repl();
 
     @Test
-    public void whileBlock() {
+    public void forBlock() {
         String expression = """
                 {
                     var a = 11;
                     {
-                       while(a < 20) {
+                       for(var b = 0; b < 5; b = b + 1) {
                             a = a + 2;
                        }
                     }
@@ -25,37 +25,35 @@ public class WhileBlocksTests {
     }
 
     @Test
-    public void whileBlockBesides() {
+    public void forBlockBesides() {
         String expression = """
                 {
                     var a = 11;
                     {
-                       while(a < 20) {
+                       for(var b = 5; b < 10; b = b + 2) {
                             a = a + 2;
                        }
                        
-                       while(a < 30) {
-                            a = a + 4;
+                       for(var b = 15; b < 20; b = b + 1) {
+                            a = a + 2;
                        }
                     }
                     a = a;
                 }
                 """;
         Object result = repl.evaluateToObject(expression);
-        Assertions.assertThat(result).isEqualTo(33);
+        Assertions.assertThat(result).isEqualTo(27);
     }
 
     @Test
-    public void whileBlockNested() {
+    public void forBlockNested() {
         String expression = """
                 {
                     var a = 11;
                     {
-                       while(a < 15) {
+                       for(var b = 5; b < 10; b = b + 1) {
                             a = a + 2;
-                            var b = 1;
-                            while(b < 4) {
-                                b = b + 1;
+                            for(var b = 15; b < 20; b = b + 1) {
                                 a = a + 1;
                             }
                        }
@@ -64,6 +62,6 @@ public class WhileBlocksTests {
                 }
                 """;
         Object result = repl.evaluateToObject(expression);
-        Assertions.assertThat(result).isEqualTo(16);
+        Assertions.assertThat(result).isEqualTo(46);
     }
 }

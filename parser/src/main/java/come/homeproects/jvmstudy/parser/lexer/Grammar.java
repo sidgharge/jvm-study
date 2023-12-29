@@ -14,6 +14,7 @@ public class Grammar {
             case "if" -> TokenType.KEYWORD_IF_TOKEN;
             case "else" -> TokenType.KEYWORD_ELSE_TOKEN;
             case "while" -> TokenType.KEYWORD_WHILE_TOKEN;
+            case "for" -> TokenType.KEYWORD_FOR_TOKEN;
             default -> TokenType.IDENTIFIER_TOKEN;
         };
     }

@@ -10,6 +10,7 @@ import come.homeproects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.ElseBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
+import come.homeproects.jvmstudy.parser.binder.statements.ForBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.IfBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableReassignmentBoundStatement;
@@ -25,6 +26,7 @@ import come.homeproects.jvmstudy.parser.lowerer.Lowerer;
 import come.homeproects.jvmstudy.parser.statements.BlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.ElseBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
+import come.homeproects.jvmstudy.parser.statements.ForBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.IfBlockSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.SyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.VariableDeclarationSyntaxStatement;
@@ -70,11 +72,29 @@ public class Binder {
             case VariableReassignmentSyntaxStatement variableReassignmentSyntaxStatement -> variableReassignmentSyntaxStatement(variableReassignmentSyntaxStatement);
             case IfBlockSyntaxStatement ifBlockSyntaxStatement -> ifBlockSyntaxStatement(ifBlockSyntaxStatement);
             case WhileBlockSyntaxStatement whileBlockSyntaxStatement -> whileBlockSyntaxStatement(whileBlockSyntaxStatement);
+            case ForBlockSyntaxStatement forBlockSyntaxStatement -> forBlockSyntaxStatement(forBlockSyntaxStatement);
             default -> throw new RuntimeException("Unhandled statement type: " + statement.statementType());
         };
     }
 
-    private BoundStatement whileBlockSyntaxStatement(WhileBlockSyntaxStatement whileBlockSyntaxStatement) {
+    private ForBlockBoundStatement forBlockSyntaxStatement(ForBlockSyntaxStatement forBlockSyntaxStatement) {
+        scopedTypes.add(new HashMap<>());
+        BoundStatement initializer = bind(forBlockSyntaxStatement.initializer());
+
+        ExpressionBoundStatement condition = expressionSyntaxStatement(forBlockSyntaxStatement.condition());
+        if (!condition.expression().type().equals(Type.BOOLEAN)) {
+            diagnostics.addDiagnostic(forBlockSyntaxStatement.forKeywordToken(), "condition in `for` loop should evaluate to a boolean, but got `%s`", condition.expression().type());
+        }
+
+        BoundStatement stepper = bind(forBlockSyntaxStatement.stepper());
+        BlockBoundStatement body = blockSyntaxStatement(forBlockSyntaxStatement.forBlockBody());
+
+        scopedTypes.removeLast();
+
+        return new ForBlockBoundStatement(forBlockSyntaxStatement.forKeywordToken(), forBlockSyntaxStatement.openBracket(), initializer, condition, stepper, forBlockSyntaxStatement.closedBracket(), body);
+    }
+
+    private WhileBlockBoundStatement whileBlockSyntaxStatement(WhileBlockSyntaxStatement whileBlockSyntaxStatement) {
         BoundExpression condition = bind(whileBlockSyntaxStatement.condition());
         if(!condition.type().equals(Type.BOOLEAN)) {
             diagnostics.addDiagnostic(whileBlockSyntaxStatement.whileKeywordToken(), "Condition inside `while` should evaluate to a boolean, but got `%s`", condition.type());

@@ -13,15 +13,19 @@ public class ManualTest {
 
     @Test
     public void test() {
-        String expression = "5 || 2 && true == 3 || 5 == 4;";
+        String expression1 = "var a = 5; a = a + 10";
 
-        String expression2 = """
+        String expression = """
                 {
-                    var a = 1;
-                    var b = true;
-                    while(b) {
-                        a = a + 2;
-                        b = a < 10;
+                    var a = 11;
+                    {
+                       for(var b = 5; b < 10; b = b + 2) {
+                            a = a + 2;
+                       }
+                       
+                       for(var b = 15; b < 20; b = b + 1) {
+                            a = a + 2;
+                       }
                     }
                     a = a;
                 }
