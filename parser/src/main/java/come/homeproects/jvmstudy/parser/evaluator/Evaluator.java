@@ -49,7 +49,6 @@ public class Evaluator {
             case BlockBoundStatement blockBoundStatement -> blockBoundStatement(blockBoundStatement);
             case VariableDeclarationBoundStatement variableDeclarationBoundStatement -> variableDeclarationBoundStatement(variableDeclarationBoundStatement);
             case VariableReassignmentBoundStatement variableReassignmentBoundStatement -> variableReassignmentBoundStatement(variableReassignmentBoundStatement);
-            case IfBlockBoundStatement ifBlockBoundStatement-> ifBlockBoundStatement(ifBlockBoundStatement);
             case WhileBlockBoundStatement whileBlockBoundStatement-> whileBlockBoundStatement(whileBlockBoundStatement);
             case LabelBoundStatement __ -> {}
             default -> throw new RuntimeException("Unhandled statement type: " + statement.getClass());
@@ -62,15 +61,6 @@ public class Evaluator {
         while (condition) {
             boundStatement(whileBlockBoundStatement.whileBlockBody());
             condition = (boolean) boundExpression(whileBlockBoundStatement.condition());
-        }
-    }
-
-    private void ifBlockBoundStatement(IfBlockBoundStatement ifBlockBoundStatement) {
-        boolean condition = (boolean) boundExpression(ifBlockBoundStatement.condition());
-        if (condition) {
-            boundStatement(ifBlockBoundStatement.ifBlockBody());
-        } else {
-            ifBlockBoundStatement.elseBlockBody().map(ElseBlockBoundStatement::elseBlockBody).ifPresent(this::boundStatement);
         }
     }
 
@@ -185,21 +175,7 @@ public class Evaluator {
             case GREATER_THAN_EQUALS_TOKEN -> (int) boundExpression(binaryExpression.left()) >= (int) boundExpression(binaryExpression.right());
             case LESS_THAN_TOKEN -> (int) boundExpression(binaryExpression.left()) < (int) boundExpression(binaryExpression.right());
             case LESS_THAN_EQUALS_TOKEN -> (int) boundExpression(binaryExpression.left()) <= (int) boundExpression(binaryExpression.right());
-            case EQUALS_TOKEN -> assignmentEvaluation(binaryExpression);
             default -> throw new RuntimeException("Unknown token: " + binaryExpression.operatorToken());
         };
-    }
-
-    private Object assignmentEvaluation(BinaryBoundExpression binaryExpression) {
-        if (true) {
-            throw new RuntimeException("COde should never come here");
-        }
-        if (!(binaryExpression.left() instanceof LiteralBoundExpression) || !((LiteralBoundExpression) binaryExpression.left()).token().type().equals(TokenType.IDENTIFIER_TOKEN)) {
-            throw new RuntimeException("Left side of assignment is not a variable");
-        }
-        Object result = boundExpression(binaryExpression.right());
-        String variableName = ((LiteralBoundExpression) binaryExpression.left()).token().value();
-//        variables.put(variableName, result);
-        return result;
     }
 }

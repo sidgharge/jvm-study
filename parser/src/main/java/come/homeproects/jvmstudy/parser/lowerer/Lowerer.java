@@ -24,7 +24,7 @@ public class Lowerer {
         };
     }
 
-    private BoundStatement blockBoundStatement(BlockBoundStatement blockBoundStatement) {
+    private BlockBoundStatement blockBoundStatement(BlockBoundStatement blockBoundStatement) {
         List<BoundStatement> statements = blockBoundStatement.statements().stream().map(this::lower).collect(Collectors.toList());
         if (statements.equals(blockBoundStatement.statements())) {
             return blockBoundStatement;
@@ -41,12 +41,12 @@ public class Lowerer {
         ConditionalGotoBoundStatement conditionalGotoBoundStatement = new ConditionalGotoBoundStatement(ifStatement.condition(), elseLabel);
 
         statements.add(conditionalGotoBoundStatement);
-        statements.addAll(ifStatement.ifBlockBody().statements());
+        statements.addAll(blockBoundStatement(ifStatement.ifBlockBody()).statements());
 
         if (ifStatement.elseBlockBody().isPresent()) {
             statements.add(new GotoBoundStatement(endLabel));
             statements.add(new LabelBoundStatement(elseLabel));
-            statements.addAll(ifStatement.elseBlockBody().get().elseBlockBody().statements());
+            statements.addAll(blockBoundStatement(ifStatement.elseBlockBody().get().elseBlockBody()).statements());
         }
         statements.add(endStatement);
 
