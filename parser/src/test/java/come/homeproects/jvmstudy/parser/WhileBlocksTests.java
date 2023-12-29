@@ -25,6 +25,27 @@ public class WhileBlocksTests {
     }
 
     @Test
+    public void whileBlockBesided() {
+        String expression = """
+                {
+                    var a = 11;
+                    {
+                       while(a < 20) {
+                            a = a + 2;
+                       }
+                       
+                       while(a < 30) {
+                            a = a + 4;
+                       }
+                    }
+                    a = a;
+                }
+                """;
+        Object result = repl.evaluateToObject(expression);
+        Assertions.assertThat(result).isEqualTo(33);
+    }
+
+    @Test
     public void whileBlockNested() {
         String expression = """
                 {

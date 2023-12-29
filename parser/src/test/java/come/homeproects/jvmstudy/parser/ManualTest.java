@@ -18,8 +18,10 @@ public class ManualTest {
         String expression = """
                 {
                     var a = 1;
-                    while(a < 10) {
+                    var b = true;
+                    while(b) {
                         a = a + 2;
+                        b = a < 10;
                     }
                     a = a;
                 }
