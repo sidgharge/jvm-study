@@ -79,7 +79,7 @@ public class Binder {
         if(!condition.type().equals(boolean.class)) {
             diagnostics.addDiagnostic(whileBlockSyntaxStatement.whileKeywordToken(), "Condition inside `while` should evaluate to a boolean, but got `%s`", condition.type());
         }
-        BoundStatement body = bind(whileBlockSyntaxStatement.whileBlockBody());
+        BlockBoundStatement body = blockSyntaxStatement(whileBlockSyntaxStatement.whileBlockBody());
         return new WhileBlockBoundStatement(
                 whileBlockSyntaxStatement.whileKeywordToken(),
                 whileBlockSyntaxStatement.openBracket(),

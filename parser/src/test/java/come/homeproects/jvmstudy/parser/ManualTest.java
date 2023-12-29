@@ -18,16 +18,8 @@ public class ManualTest {
         String expression = """
                 {
                     var a = 1;
-                    {
-                        if(a < 15 && a > 6) {
-                            a = 20;
-                        } else {
-                            if(a == 1) {
-                                a= 100;
-                            } else {
-                                a = 50;
-                            }
-                        }
+                    while(a < 10) {
+                        a = a + 2;
                     }
                     a = a;
                 }

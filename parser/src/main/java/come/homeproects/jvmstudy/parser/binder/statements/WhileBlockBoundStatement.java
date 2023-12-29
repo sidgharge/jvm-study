@@ -8,7 +8,7 @@ public record WhileBlockBoundStatement(
         Token openBracket,
         BoundExpression condition,
         Token closedBracket,
-        BoundStatement whileBlockBody) implements BoundStatement {
+        BlockBoundStatement whileBlockBody) implements BoundStatement {
     @Override
     public String toString() {
         return prettyString(0);

@@ -6,13 +6,9 @@ import come.homeproects.jvmstudy.parser.binder.expressions.LiteralBoundExpressio
 import come.homeproects.jvmstudy.parser.binder.expressions.UnaryBoundExpression;
 import come.homeproects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.BoundStatement;
-import come.homeproects.jvmstudy.parser.binder.statements.ElseBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
-import come.homeproects.jvmstudy.parser.binder.statements.IfBlockBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
 import come.homeproects.jvmstudy.parser.binder.statements.VariableReassignmentBoundStatement;
-import come.homeproects.jvmstudy.parser.binder.statements.WhileBlockBoundStatement;
-import come.homeproects.jvmstudy.parser.lexer.TokenType;
 import come.homeproects.jvmstudy.parser.lowerer.ConditionalGotoBoundStatement;
 import come.homeproects.jvmstudy.parser.lowerer.GotoBoundStatement;
 import come.homeproects.jvmstudy.parser.lowerer.LabelBoundStatement;
@@ -49,19 +45,10 @@ public class Evaluator {
             case BlockBoundStatement blockBoundStatement -> blockBoundStatement(blockBoundStatement);
             case VariableDeclarationBoundStatement variableDeclarationBoundStatement -> variableDeclarationBoundStatement(variableDeclarationBoundStatement);
             case VariableReassignmentBoundStatement variableReassignmentBoundStatement -> variableReassignmentBoundStatement(variableReassignmentBoundStatement);
-            case WhileBlockBoundStatement whileBlockBoundStatement-> whileBlockBoundStatement(whileBlockBoundStatement);
             case LabelBoundStatement __ -> {}
             default -> throw new RuntimeException("Unhandled statement type: " + statement.getClass());
         }
         return lastValue;
-    }
-
-    private void whileBlockBoundStatement(WhileBlockBoundStatement whileBlockBoundStatement) {
-        boolean condition = (boolean) boundExpression(whileBlockBoundStatement.condition());
-        while (condition) {
-            boundStatement(whileBlockBoundStatement.whileBlockBody());
-            condition = (boolean) boundExpression(whileBlockBoundStatement.condition());
-        }
     }
 
     private void variableReassignmentBoundStatement(VariableReassignmentBoundStatement variableReassignmentBoundStatement) {
