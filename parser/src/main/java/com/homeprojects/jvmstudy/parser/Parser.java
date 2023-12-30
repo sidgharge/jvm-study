@@ -215,7 +215,7 @@ public class Parser {
         if (token.type() == TokenType.OPEN_BRACKET_TOKEN) {
             return parseBracketExpression();
         }
-        if (token.type() == TokenType.NUMBER_TOKEN) {
+        if (token.type() == TokenType.NUMBER_TOKEN || token.type() == TokenType.STRING_TOKEN) {
             return new LiteralSyntaxExpression(token);
         }
         if (token.type() == TokenType.PLUS_TOKEN || token.type() == TokenType.MINUS_TOKEN) {

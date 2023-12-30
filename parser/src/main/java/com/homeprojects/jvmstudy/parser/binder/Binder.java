@@ -181,7 +181,7 @@ public class Binder {
     }
 
     private Token getOrDefaultToken(Token token, String defaultValue, TokenType type) {
-        return token == null ? null : new Token(":", TokenType.COLON_TOKEN, 0, 0, 0);
+        return token == null ? new Token(defaultValue, type, 0, 0, 0) : token;
     }
 
     private ExpressionBoundStatement expressionSyntaxStatement(ExpressionSyntaxStatement expressionSyntaxStatement) {
@@ -223,6 +223,15 @@ public class Binder {
         if (!left.type().equals(right.type())) {
             diagnostics.addDiagnostic(operatorToken, "Operator '%s' can not be used with '%s' and '%s'", operatorToken.value(), left.type(), right.type());
             return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.UNKNOWN);
+        }
+
+        if(binaryExpression.token().type() == TokenType.PLUS_TOKEN) {
+            if (left.type().equals(Type.STRING) && right.type().equals(Type.STRING)) {
+                return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.STRING);
+            } else if (left.type().equals(Type.STRING) || right.type().equals(Type.STRING)) {
+                diagnostics.addDiagnostic(operatorToken, "Operator '%s' can not be used with '%s' and '%s'", binaryExpression.token().value(), left.type(), right.type());
+                return new BinaryBoundExpression(left, right, binaryExpression.token(), Type.UNKNOWN);
+            }
         }
 
         if (binaryExpression.token().type().isMathematicalOperatorToken()) {
@@ -275,6 +284,9 @@ public class Binder {
         }
         if (token.type().equals(TokenType.KEYWORD_TRUE_TOKEN) || token.type().equals(TokenType.KEYWORD_FALSE_TOKEN)) {
             return new LiteralBoundExpression(token, Type.BOOLEAN);
+        }
+        if (token.type().equals(TokenType.STRING_TOKEN)) {
+            return new LiteralBoundExpression(token, Type.STRING);
         }
         if (token.type() == TokenType.IDENTIFIER_TOKEN) {
             Optional<Type> type = getTypeFromStack(token);

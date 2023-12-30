@@ -13,6 +13,7 @@ import com.homeprojects.jvmstudy.parser.lowerer.ConditionalGotoBoundStatement;
 import com.homeprojects.jvmstudy.parser.lowerer.GotoBoundStatement;
 import com.homeprojects.jvmstudy.parser.lowerer.LabelBoundStatement;
 import com.homeprojects.jvmstudy.parser.lowerer.Label;
+import com.homeprojects.jvmstudy.parser.types.Type;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -122,6 +123,7 @@ public class Evaluator {
             case KEYWORD_FALSE_TOKEN -> false;
             case NUMBER_TOKEN -> Integer.parseInt(literalExpression.token().value());
             case IDENTIFIER_TOKEN -> findVariableValue(literalExpression.token().value()).orElse(null);
+            case STRING_TOKEN -> literalExpression.token().value();
             default -> throw new RuntimeException("Unhandled keyword " + literalExpression.token().value());
         };
     }
@@ -150,7 +152,7 @@ public class Evaluator {
 
     private Object binaryExpression(BinaryBoundExpression binaryExpression) {
         return switch (binaryExpression.operatorToken().type()) {
-            case PLUS_TOKEN -> (int) boundExpression(binaryExpression.left()) + (int) boundExpression(binaryExpression.right());
+            case PLUS_TOKEN -> handlePlusToken(binaryExpression);
             case MINUS_TOKEN -> (int) boundExpression(binaryExpression.left()) - (int) boundExpression(binaryExpression.right());
             case START_TOKEN -> (int) boundExpression(binaryExpression.left()) * (int) boundExpression(binaryExpression.right());
             case SLASH_TOKEN -> (int) boundExpression(binaryExpression.left()) / (int) boundExpression(binaryExpression.right());
@@ -164,5 +166,13 @@ public class Evaluator {
             case LESS_THAN_EQUALS_TOKEN -> (int) boundExpression(binaryExpression.left()) <= (int) boundExpression(binaryExpression.right());
             default -> throw new RuntimeException("Unknown token: " + binaryExpression.operatorToken());
         };
+    }
+
+    private Object handlePlusToken(BinaryBoundExpression binaryExpression) {
+        if (binaryExpression.type() == Type.INT) {
+            return (int) boundExpression(binaryExpression.left()) + (int) boundExpression(binaryExpression.right());
+        } else {
+            return boundExpression(binaryExpression.left()).toString() + boundExpression(binaryExpression.right()).toString();
+        }
     }
 }

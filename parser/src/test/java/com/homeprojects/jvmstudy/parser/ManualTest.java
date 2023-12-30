@@ -17,7 +17,7 @@ public class ManualTest {
 
         String expression = """
                 {
-                    let a: int = 10;
+                    let a = "Hello" + " world";
                     a = a;
                 }
                 """;

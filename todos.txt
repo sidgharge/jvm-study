@@ -1,2 +1,6 @@
 - Think about binder and error messages propagating
 - better errors
+- in built functions and function calls
+- function declarations
+- lexer needs diagnostics access
+- support for double quotes in string (\")

@@ -75,11 +75,33 @@ public class Lexer {
             return compareOperator();
         }
 
+        if (ch == '"')
+            return stringToken();
+
         if (isAlphabetic(ch)) {
             return wordToken();
         }
 
         return singleCharacterToken(String.valueOf(ch), TokenType.BAD_SYNTAX_TOKEN);
+    }
+
+    private Token stringToken() {
+        int startIndex = text.index();
+        int lineNumber = text.lineNumber();
+        StringBuilder builder = new StringBuilder();
+        text.currentAndAdvance();
+        while (true) {
+            char ch = text.currentAndAdvance();
+            if (text.isAtEnd()) {
+                return new Token(builder.toString(), TokenType.BAD_SYNTAX_TOKEN, startIndex, text.index(), lineNumber);
+            }
+            if (ch == '"') {
+                break;
+            }
+            builder.append(ch);
+        }
+        String value = builder.toString();
+        return new Token(value, TokenType.STRING_TOKEN, startIndex, text.index(), lineNumber);
     }
 
     private Token compareOperator() {

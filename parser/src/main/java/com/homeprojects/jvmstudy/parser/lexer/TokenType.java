@@ -8,6 +8,7 @@ public enum TokenType {
     NUMBER_TOKEN,
     KEYWORD_TRUE_TOKEN,
     KEYWORD_FALSE_TOKEN,
+    STRING_TOKEN,
 
     // Misc
     OPEN_BRACKET_TOKEN,

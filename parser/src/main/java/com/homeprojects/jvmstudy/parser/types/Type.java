@@ -4,7 +4,10 @@ import java.util.Arrays;
 
 public enum Type {
 
-    INT("int"), BOOLEAN("boolean"), UNKNOWN("unknown");
+    INT("int"),
+    BOOLEAN("boolean"),
+    STRING("string"),
+    UNKNOWN("unknown");
 
     private final String typeName;
 
