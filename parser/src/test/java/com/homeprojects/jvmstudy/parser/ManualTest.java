@@ -3,13 +3,24 @@ package com.homeprojects.jvmstudy.parser;
 import com.homeprojects.jvmstudy.parser.binder.Binder;
 import com.homeprojects.jvmstudy.parser.binder.statements.BoundStatement;
 import com.homeprojects.jvmstudy.parser.evaluator.Evaluator;
+import com.homeprojects.jvmstudy.parser.lexer.Token;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ManualTest {
+
+    public static void main(String[] args) {
+        new ManualTest().test();
+    }
 
     @Test
     public void test() {
@@ -17,15 +28,16 @@ public class ManualTest {
 
         String expression = """
                 {
-                    let a = "Hello" + " world";
-                    a = a;
+                    println("Enter your name:");
+                    let name = input();
+                    println("Hello", name);
                 }
                 """;
 
         Binder binder = new Binder();
         BoundStatement statement = binder.bind(expression);
 
-        System.out.println("Tokens:\n" + binder.tokens().stream().map(Objects::toString).collect(Collectors.joining(" ")));
+        System.out.println("Tokens:\n" + binder.tokens().stream().map(Token::type).map(Objects::toString).collect(Collectors.joining(" ")));
 
         System.out.println("Parser AST:\n" + binder.syntaxStatement().prettyString(0));
 

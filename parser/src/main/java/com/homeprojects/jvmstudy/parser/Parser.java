@@ -4,10 +4,13 @@ import com.homeprojects.jvmstudy.parser.diagnostics.Diagnostic;
 import com.homeprojects.jvmstudy.parser.diagnostics.Diagnostics;
 import com.homeprojects.jvmstudy.parser.expressions.SyntaxExpression;
 import com.homeprojects.jvmstudy.parser.lexer.Token;
+import com.homeprojects.jvmstudy.parser.expressions.ArgumentSyntax;
+import com.homeprojects.jvmstudy.parser.expressions.ArgumentsSyntax;
 import com.homeprojects.jvmstudy.parser.statements.BlockSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.ElseBlockSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.IfBlockSyntaxStatement;
+import com.homeprojects.jvmstudy.parser.statements.MethodCallSyntaxExpression;
 import com.homeprojects.jvmstudy.parser.statements.SyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.VariableReassignmentSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.WhileBlockSyntaxStatement;
@@ -48,7 +51,6 @@ public class Parser {
     public SyntaxStatement parse() {
         tokenize();
         return parseTillEnd();
-//        return parseStatement();
     }
 
     private SyntaxStatement parseTillEnd() {
@@ -72,12 +74,23 @@ public class Parser {
         return switch (token.type()) {
             case OPEN_CURLY_BRACKET_TOKEN -> parseBlockStatement();
             case KEYWORD_LET_TOKEN -> parseVariableDeclaration();
-            case IDENTIFIER_TOKEN -> parseVariableReassignment();
+            case IDENTIFIER_TOKEN -> parseIdentifierToken();
             case KEYWORD_IF_TOKEN -> parseIfStatement();
             case KEYWORD_WHILE_TOKEN -> parseWhileStatement();
             case KEYWORD_FOR_TOKEN -> parseForStatement();
             default -> parseExpressionStatement();
         };
+    }
+
+    private SyntaxStatement parseIdentifierToken() {
+        Token token = current();
+        if (token.type() == TokenType.IDENTIFIER_TOKEN && peek(1).type() == TokenType.OPEN_BRACKET_TOKEN) {
+            MethodCallSyntaxExpression expression = parseMethodCallSyntaxExpression();
+            Token semiColon = matchAndAdvance(TokenType.SEMI_COLON_TOKEN, ";");
+            return new ExpressionSyntaxStatement(expression, semiColon);
+        } else {
+            return parseVariableReassignment();
+        }
     }
 
     private ForBlockSyntaxStatement parseForStatement() {
@@ -119,11 +132,33 @@ public class Parser {
         Token elseKeywordToken = matchAndAdvance(TokenType.KEYWORD_ELSE_TOKEN, "else");
         BlockSyntaxStatement elseBlockBody = parseBlockStatement();
         return Optional.of(new ElseBlockSyntaxStatement(elseKeywordToken, elseBlockBody));
-
     }
 
-    private VariableReassignmentSyntaxStatement parseVariableReassignment() {
+    private SyntaxStatement parseVariableReassignment() {
         return parseVariableReassignment(true);
+    }
+
+    private MethodCallSyntaxExpression parseMethodCallSyntaxExpression() {
+        Token methodNameToken = matchAndAdvance(TokenType.IDENTIFIER_TOKEN, "$dummy");
+        Token openBracketToken = matchAndAdvance(TokenType.OPEN_BRACKET_TOKEN, "(");
+        ArgumentsSyntax argumentsSyntax = parseArguments();
+        Token closedBracketToken = matchAndAdvance(TokenType.CLOSED_BRACKET_TOKEN, ")");
+        return new MethodCallSyntaxExpression(methodNameToken, openBracketToken, argumentsSyntax, closedBracketToken);
+    }
+
+    private ArgumentsSyntax parseArguments() {
+        List<ArgumentSyntax> argumentSyntaxes = new ArrayList<>();
+        while (current().type() != TokenType.CLOSED_BRACKET_TOKEN) {
+            SyntaxExpression expression = parseExpression();
+            Token token = current();
+            if (token.type() == TokenType.CLOSED_BRACKET_TOKEN) {
+                argumentSyntaxes.add(new ArgumentSyntax(expression, null));
+                break;
+            }
+            advance();
+            argumentSyntaxes.add(new ArgumentSyntax(expression, token));
+        }
+        return new ArgumentsSyntax(argumentSyntaxes);
     }
 
     private VariableReassignmentSyntaxStatement parseVariableReassignment(boolean isSemicolonExpected) {
@@ -226,6 +261,10 @@ public class Parser {
             SyntaxExpression syntaxExpression = parsePrimaryExpression();
             return new UnarySyntaxExpression(token, syntaxExpression);
         }
+        if (token.type() == TokenType.IDENTIFIER_TOKEN && current().type() == TokenType.OPEN_BRACKET_TOKEN) {
+            index--;
+            return parseMethodCallSyntaxExpression();
+        }
         if (token.type() == TokenType.KEYWORD_TRUE_TOKEN || token.type() ==  TokenType.KEYWORD_FALSE_TOKEN || token.type() == TokenType.IDENTIFIER_TOKEN) {
             return new LiteralSyntaxExpression(token);
         }
@@ -262,6 +301,10 @@ public class Parser {
 
     private Token current() {
         return tokens.get(index);
+    }
+
+    private Token peek(int inc) {
+        return index + inc < tokens.size() ? tokens.get(index + inc) : tokens.getLast();
     }
 
     private boolean isAtEnd() {

@@ -7,6 +7,7 @@ public enum Type {
     INT("int"),
     BOOLEAN("boolean"),
     STRING("string"),
+    VOID("void"),
     UNKNOWN("unknown");
 
     private final String typeName;

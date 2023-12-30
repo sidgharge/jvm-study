@@ -15,7 +15,7 @@ public interface BoundExpression {
 
         @Override
         public String toString() {
-            return Type.UNKNOWN.name();
+            return Type.UNKNOWN.typeName();
         }
     }
 }

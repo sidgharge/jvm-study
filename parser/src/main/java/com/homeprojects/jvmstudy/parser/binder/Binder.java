@@ -1,9 +1,12 @@
 package com.homeprojects.jvmstudy.parser.binder;
 
 import com.homeprojects.jvmstudy.parser.Parser;
+import com.homeprojects.jvmstudy.parser.binder.expressions.ArgumentBoundExpression;
+import com.homeprojects.jvmstudy.parser.binder.expressions.ArgumentsBound;
 import com.homeprojects.jvmstudy.parser.binder.expressions.BinaryBoundExpression;
 import com.homeprojects.jvmstudy.parser.binder.expressions.BoundExpression;
 import com.homeprojects.jvmstudy.parser.binder.expressions.LiteralBoundExpression;
+import com.homeprojects.jvmstudy.parser.binder.expressions.MethodCallBoundExpression;
 import com.homeprojects.jvmstudy.parser.binder.expressions.UnaryBoundExpression;
 import com.homeprojects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.BoundStatement;
@@ -12,12 +15,15 @@ import com.homeprojects.jvmstudy.parser.binder.statements.IfBlockBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.VariableReassignmentBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.WhileBlockBoundStatement;
 import com.homeprojects.jvmstudy.parser.diagnostics.Diagnostics;
+import com.homeprojects.jvmstudy.parser.expressions.ArgumentSyntax;
+import com.homeprojects.jvmstudy.parser.expressions.ArgumentsSyntax;
 import com.homeprojects.jvmstudy.parser.expressions.SyntaxExpression;
 import com.homeprojects.jvmstudy.parser.lexer.Token;
 import com.homeprojects.jvmstudy.parser.statements.BlockSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.ElseBlockSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.IfBlockSyntaxStatement;
+import com.homeprojects.jvmstudy.parser.statements.MethodCallSyntaxExpression;
 import com.homeprojects.jvmstudy.parser.statements.SyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.VariableReassignmentSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.WhileBlockSyntaxStatement;
@@ -49,9 +55,13 @@ public class Binder {
 
     private SyntaxStatement syntaxStatement;
 
+    private final Map<String, Type> methods;
+
     public Binder() {
         this.diagnostics = new Diagnostics();
         this.scopedTypes = new ArrayList<>();
+        this.methods = new HashMap<>();
+        addGlobalMethods();
     }
 
     public BoundStatement bind(String inputExpression) {
@@ -207,8 +217,41 @@ public class Binder {
             case LiteralSyntaxExpression literalExpression -> literalExpression(literalExpression);
             case UnarySyntaxExpression unaryExpression -> unaryExpression(unaryExpression);
             case BinarySyntaxExpression binaryExpression -> binaryExpression(binaryExpression);
+            case MethodCallSyntaxExpression methodCallSyntaxExpression -> methodCallSyntaxExpression(methodCallSyntaxExpression);
             default -> throw new RuntimeException("Unhandled expression: " + syntaxExpression.expressionType());
         };
+    }
+
+    private MethodCallBoundExpression methodCallSyntaxExpression(MethodCallSyntaxExpression methodCallSyntaxExpression) {
+        ArgumentsBound arguments = argumentsSyntax(methodCallSyntaxExpression.argumentsSyntax());
+
+        Type type = findMethod(methodCallSyntaxExpression.methodName().value(), arguments);
+
+        return new MethodCallBoundExpression(
+                methodCallSyntaxExpression.methodName(),
+                methodCallSyntaxExpression.openBrace(),
+                arguments,
+                methodCallSyntaxExpression.closedBrace(),
+                type
+        );
+    }
+
+    private Type findMethod(String methodName, ArgumentsBound arguments) {
+        return methods.getOrDefault(methodName, Type.UNKNOWN);
+    }
+
+    private ArgumentsBound argumentsSyntax(ArgumentsSyntax argumentsSyntax) {
+        List<ArgumentBoundExpression> expressions = new ArrayList<>();
+        for (ArgumentSyntax argumentSyntax : argumentsSyntax.argumentSyntaxes()) {
+            ArgumentBoundExpression expression = argumentSyntax(argumentSyntax);
+            expressions.add(expression);
+        }
+        return new ArgumentsBound(expressions);
+    }
+
+    private ArgumentBoundExpression argumentSyntax(ArgumentSyntax argumentSyntax) {
+        BoundExpression expression = bind(argumentSyntax.expression());
+        return new ArgumentBoundExpression(expression, argumentSyntax.commaToken());
     }
 
     private BinaryBoundExpression binaryExpression(BinarySyntaxExpression binaryExpression) {
@@ -308,6 +351,11 @@ public class Binder {
             }
         }
         return Optional.empty();
+    }
+
+    private void addGlobalMethods() {
+        methods.put("input", Type.STRING);
+        methods.put("println", Type.VOID);
     }
 
     public Diagnostics diagnostics() {

@@ -1,5 +1,8 @@
 package com.homeprojects.jvmstudy.parser.evaluator;
 
+import com.homeprojects.jvmstudy.parser.binder.expressions.ArgumentBoundExpression;
+import com.homeprojects.jvmstudy.parser.binder.expressions.ArgumentsBound;
+import com.homeprojects.jvmstudy.parser.binder.expressions.MethodCallBoundExpression;
 import com.homeprojects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.BoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.expressions.BinaryBoundExpression;
@@ -15,11 +18,16 @@ import com.homeprojects.jvmstudy.parser.lowerer.LabelBoundStatement;
 import com.homeprojects.jvmstudy.parser.lowerer.Label;
 import com.homeprojects.jvmstudy.parser.types.Type;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Scanner;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Evaluator {
 
@@ -27,13 +35,17 @@ public class Evaluator {
 
     private final List<Map<Label, Integer>> labels;
 
+    private final Map<String, Object> methods;
+
     private Object lastValue;
 
     public Evaluator() {
         this.variables = new ArrayList<>();
         this.labels = new ArrayList<>();
+        this.methods = new HashMap<>();
+        addGlobalMethods();
     }
-    
+
     public Object evaluate(BoundStatement statement) {
         Object result = boundStatement(statement);
         lastValue = null;
@@ -113,8 +125,23 @@ public class Evaluator {
             case BinaryBoundExpression binaryExpression -> binaryExpression(binaryExpression);
             case UnaryBoundExpression unaryExpression -> unaryExpression(unaryExpression);
             case LiteralBoundExpression literalExpression -> literalExpression(literalExpression);
+            case MethodCallBoundExpression methodCallBoundExpression -> methodCallBoundExpression(methodCallBoundExpression);
             default -> throw new RuntimeException("Unhandled expression type " + expression.getClass());
         };
+    }
+
+    private Object methodCallBoundExpression(MethodCallBoundExpression methodCallBoundExpression) {
+        List<ArgumentBoundExpression> expressions = methodCallBoundExpression.arguments().expressions();
+        Object[] args = new Object[expressions.size()];
+        for (int i = 0; i < args.length; i++) {
+            Object arg = argumentBoundExpression(expressions.get(i));
+            args[i] = arg;
+        }
+        return invokeMethod(methodCallBoundExpression.methodName().value(), args);
+    }
+
+    private Object argumentBoundExpression(ArgumentBoundExpression argumentBoundExpression) {
+        return boundExpression(argumentBoundExpression.expression());
     }
 
     private Object literalExpression(LiteralBoundExpression literalExpression) {
@@ -173,6 +200,32 @@ public class Evaluator {
             return (int) boundExpression(binaryExpression.left()) + (int) boundExpression(binaryExpression.right());
         } else {
             return boundExpression(binaryExpression.left()).toString() + boundExpression(binaryExpression.right()).toString();
+        }
+    }
+
+    private void addGlobalMethods() {
+        Function<List<Object>, Object> println = (objects) -> {
+            String line = objects.stream().map(o -> o.toString()).collect(Collectors.joining(" "));
+            System.out.println(line);
+            return null;
+        };
+        this.methods.put("println", println);
+
+        Function<List<Object>, Object> input = (__) -> {
+            Scanner scanner = new Scanner(System.in);
+            String line = scanner.nextLine();
+            scanner.close();
+            return line;
+        };
+        this.methods.put("input", input);
+    }
+
+    private Object invokeMethod(String name, Object... params) {
+        Object o = methods.get(name);
+        try {
+            return o.getClass().getDeclaredMethod("apply", Object.class).invoke(o, Arrays.asList(params));
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
         }
     }
 }
