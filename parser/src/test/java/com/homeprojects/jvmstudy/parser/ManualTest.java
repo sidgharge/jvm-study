@@ -26,7 +26,7 @@ public class ManualTest {
                 """;
 
         Runner runner = new Runner(expression);
-        runner.run();
+        runner.run(false);
 
         System.out.println("Tokens:\n" + runner.tokens().stream().map(Token::type).map(Objects::toString).collect(Collectors.joining(" ")));
 

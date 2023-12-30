@@ -31,6 +31,10 @@ public class Runner {
     }
 
     public Object run() {
+        return run(true);
+    }
+
+    public Object run(boolean runOnError) {
         Lexer lexer = new Lexer(expression);
         this.tokens = lexer.tokenize();
 
@@ -45,7 +49,7 @@ public class Runner {
         Lowerer lowerer = new Lowerer(boundStatement);
         this.loweredBoundStatement = lowerer.lower();
 
-        if (this.diagnostics.hasErrors()) {
+        if (this.diagnostics.hasErrors() && !runOnError) {
             return null;
         }
 

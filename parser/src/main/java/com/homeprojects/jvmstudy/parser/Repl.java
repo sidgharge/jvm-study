@@ -63,7 +63,7 @@ public class Repl {
                 builder = new StringBuilder();
 
                 Runner runner = new Runner(line);
-                Object result = runner.run();
+                Object result = runner.run(false);
 
                 if (debug) {
                     printDebugInfo(runner);
