@@ -70,7 +70,7 @@ public class Parser {
         Token token = current();
         return switch (token.type()) {
             case OPEN_CURLY_BRACKET_TOKEN -> parseBlockStatement();
-            case KEYWORD_VAR_TOKEN -> parseVariableDeclaration();
+            case KEYWORD_LET_TOKEN -> parseVariableDeclaration();
             case IDENTIFIER_TOKEN -> parseVariableReassignment();
             case KEYWORD_IF_TOKEN -> parseIfStatement();
             case KEYWORD_WHILE_TOKEN -> parseWhileStatement();
@@ -138,12 +138,12 @@ public class Parser {
     }
 
     private SyntaxStatement parseVariableDeclaration() {
-        Token varToken = matchAndAdvance(TokenType.KEYWORD_VAR_TOKEN, "var");
+        Token letToken = matchAndAdvance(TokenType.KEYWORD_LET_TOKEN, "let");
         Token identifierToken = matchAndAdvance(TokenType.IDENTIFIER_TOKEN, "$dummy");
         Token equalsToken = matchAndAdvance(TokenType.EQUALS_TOKEN, "=");
         SyntaxExpression expression = parseExpression();
         Token semiColonToken = matchAndAdvance(TokenType.SEMI_COLON_TOKEN, ";");
-        return new VariableDeclarationSyntaxStatement(varToken, identifierToken, equalsToken, expression, semiColonToken);
+        return new VariableDeclarationSyntaxStatement(letToken, identifierToken, equalsToken, expression, semiColonToken);
     }
 
     private ExpressionSyntaxStatement parseExpressionStatement() {

@@ -4,7 +4,7 @@ import come.homeproects.jvmstudy.parser.expressions.SyntaxExpression;
 import come.homeproects.jvmstudy.parser.lexer.Token;
 
 public record VariableDeclarationSyntaxStatement(
-        Token varToken,
+        Token letToken,
         Token identifierToken,
         Token equalsToken,
         SyntaxExpression expression,
@@ -23,7 +23,7 @@ public record VariableDeclarationSyntaxStatement(
     @Override
     public String printString(int indent) {
         return "  ".repeat(indent) + String.format("%s %s %s %s%s",
-                varToken.value(),
+                letToken.value(),
                 identifierToken.value(),
                 equalsToken.value(),
                 expression.toString(),

@@ -11,9 +11,9 @@ public class BlocksTests {
     public void blockWithNumbers() {
         Object result = repl.evaluateToObject("""
                 {
-                    var a = 10;
+                    let a = 10;
                     {
-                        var b = a + 20;
+                        let b = a + 20;
                         b = b;
                     }
                 }
@@ -25,9 +25,9 @@ public class BlocksTests {
     public void blockWithBooleans() {
         Object result = repl.evaluateToObject("""
                 {
-                    var a = 10;
+                    let a = 10;
                     {
-                        var b = a == 10;
+                        let b = a == 10;
                         b = b;
                     }
                 }
@@ -38,11 +38,11 @@ public class BlocksTests {
     @Test
     public void block1() {
         Object result = repl.evaluateToObject("""
-                var x = 5;
+                let x = 5;
                 {
-                    var a = 10;
+                    let a = 10;
                     {
-                        var b = x + 10 + a;
+                        let b = x + 10 + a;
                         b = b;
                     }
                 }
@@ -54,10 +54,10 @@ public class BlocksTests {
     public void block2() {
         String expression = """
                 {
-                    var a = 10;
+                    let a = 10;
                     {
-                        var b = 10;
-                        var a = a * 20 + b;
+                        let b = 10;
+                        let a = a * 20 + b;
                     }
                     a = a;
                 }
@@ -70,10 +70,10 @@ public class BlocksTests {
     public void varReassignment() {
         String expression = """
                 {
-                    var a = 10;
+                    let a = 10;
                     {
                         a = 20;
-                        var b = a * 3;
+                        let b = a * 3;
                     }
                 }
                 """;

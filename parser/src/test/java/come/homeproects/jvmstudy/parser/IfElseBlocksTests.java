@@ -11,7 +11,7 @@ public class IfElseBlocksTests {
     public void ifBlockTest() {
         String expression = """
                 {
-                    var a = 10;
+                    let a = 10;
                     {
                         if(a < 15 && a > 6) {
                             a = 20;
@@ -28,7 +28,7 @@ public class IfElseBlocksTests {
     public void nestedIfBlockTest() {
         String expression = """
                 {
-                    var a = 10;
+                    let a = 10;
                     {
                         if(a < 15 && a > 6) {
                             a = 20;
@@ -54,7 +54,7 @@ public class IfElseBlocksTests {
     public void ifElseBlock1() {
         String expression = """
                 {
-                    var a = 10;
+                    let a = 10;
                     {
                         if(a < 15 && a > 6) {
                             a = 20;
@@ -73,7 +73,7 @@ public class IfElseBlocksTests {
     public void ifElseBlock2() {
         String expression = """
                 {
-                    var a = 1;
+                    let a = 1;
                     {
                         if(a < 15 && a > 6) {
                             a = 20;
@@ -92,7 +92,7 @@ public class IfElseBlocksTests {
     public void nestedIfElseBlock2() {
         String expression = """
                 {
-                    var a = 1;
+                    let a = 1;
                     {
                         if(a < 15 && a > 6) {
                             a = 20;

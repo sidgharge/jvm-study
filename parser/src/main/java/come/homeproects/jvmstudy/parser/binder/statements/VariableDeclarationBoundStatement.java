@@ -4,7 +4,7 @@ import come.homeproects.jvmstudy.parser.binder.expressions.BoundExpression;
 import come.homeproects.jvmstudy.parser.lexer.Token;
 
 public record VariableDeclarationBoundStatement(
-        Token varToken,
+        Token letToken,
         Token identifierToken,
         Token equalsToken,
         BoundExpression expression,
@@ -18,7 +18,7 @@ public record VariableDeclarationBoundStatement(
     @Override
     public String prettyString(int indent) {
         return "  ".repeat(indent) + String.format("%s %s %s %s%s",
-                varToken.value(),
+                letToken.value(),
                 identifierToken.value(),
                 equalsToken.value(),
                 expression.toString(),

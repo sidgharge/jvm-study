@@ -156,13 +156,13 @@ public class Binder {
         String name = variableDeclarationSyntaxStatement.identifierToken().value();
         Map<String, Type> types = scopedTypes.getLast();
         if (types.containsKey(name)) {
-            diagnostics.addDiagnostic(variableDeclarationSyntaxStatement.varToken(), "Variable '%s' is already defined", name);
+            diagnostics.addDiagnostic(variableDeclarationSyntaxStatement.letToken(), "Variable '%s' is already defined", name);
             return null;
         }
         BoundExpression expression = bind(variableDeclarationSyntaxStatement.expression());
         types.put(name, expression.type());
         return new VariableDeclarationBoundStatement(
-                variableDeclarationSyntaxStatement.varToken(),
+                variableDeclarationSyntaxStatement.letToken(),
                 variableDeclarationSyntaxStatement.identifierToken(),
                 variableDeclarationSyntaxStatement.equalsToken(),
                 expression,

@@ -10,7 +10,7 @@ public class Grammar {
             case "false" -> TokenType.KEYWORD_FALSE_TOKEN;
             case "&&" -> TokenType.DOUBLE_AMPERSAND_TOKEN;
             case "||" -> TokenType.DOUBLE_PIPE_TOKEN;
-            case "var" -> TokenType.KEYWORD_VAR_TOKEN;
+            case "let" -> TokenType.KEYWORD_LET_TOKEN;
             case "if" -> TokenType.KEYWORD_IF_TOKEN;
             case "else" -> TokenType.KEYWORD_ELSE_TOKEN;
             case "while" -> TokenType.KEYWORD_WHILE_TOKEN;

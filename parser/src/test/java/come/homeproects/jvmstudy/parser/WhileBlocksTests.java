@@ -11,7 +11,7 @@ public class WhileBlocksTests {
     public void whileBlock() {
         String expression = """
                 {
-                    var a = 11;
+                    let a = 11;
                     {
                        while(a < 20) {
                             a = a + 2;
@@ -28,7 +28,7 @@ public class WhileBlocksTests {
     public void whileBlockBesides() {
         String expression = """
                 {
-                    var a = 11;
+                    let a = 11;
                     {
                        while(a < 20) {
                             a = a + 2;
@@ -49,11 +49,11 @@ public class WhileBlocksTests {
     public void whileBlockNested() {
         String expression = """
                 {
-                    var a = 11;
+                    let a = 11;
                     {
                        while(a < 15) {
                             a = a + 2;
-                            var b = 1;
+                            let b = 1;
                             while(b < 4) {
                                 b = b + 1;
                                 a = a + 1;

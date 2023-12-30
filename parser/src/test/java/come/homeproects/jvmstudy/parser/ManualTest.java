@@ -17,13 +17,13 @@ public class ManualTest {
 
         String expression = """
                 {
-                    var a = 11;
+                    let a = 11;
                     {
-                       for(var b = 5; b < 10; b = b + 2) {
+                       for(let b = 5; b < 10; b = b + 2) {
                             a = a + 2;
                        }
                        
-                       for(var b = 15; b < 20; b = b + 1) {
+                       for(let b = 15; b < 20; b = b + 1) {
                             a = a + 2;
                        }
                     }
