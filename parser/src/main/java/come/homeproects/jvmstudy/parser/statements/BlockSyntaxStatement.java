@@ -14,14 +14,14 @@ public record BlockSyntaxStatement(Token openBracket, Token closedBracket, List<
 
     @Override
     public String toString() {
-        return printString(0);
+        return prettyString(0);
     }
 
     @Override
-    public String printString(int indent) {
+    public String prettyString(int indent) {
         String tabs = "  ".repeat(indent);
         return statements.stream()
-                .map(s -> s.printString(indent + 1))
+                .map(s -> s.prettyString(indent + 1))
                 .collect(Collectors.joining("\n", tabs + "{\n", "\n" + tabs + "}"));
     }
 }

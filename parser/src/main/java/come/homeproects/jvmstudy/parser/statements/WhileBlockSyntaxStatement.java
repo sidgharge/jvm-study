@@ -17,16 +17,16 @@ public record WhileBlockSyntaxStatement(
 
     @Override
     public String toString() {
-        return printString(0);
+        return prettyString(0);
     }
 
     @Override
-    public String printString(int indent) {
+    public String prettyString(int indent) {
         return "  ".repeat(indent) + String.format("%s %s%s%s\n%s",
                 whileKeywordToken.value(),
                 openBracket.value(),
                 condition.toString(),
                 closedBracket.value(),
-                whileBlockBody.printString(indent));
+                whileBlockBody.prettyString(indent));
     }
 }

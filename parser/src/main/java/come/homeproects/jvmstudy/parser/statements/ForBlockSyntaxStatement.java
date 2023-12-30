@@ -18,11 +18,11 @@ public record ForBlockSyntaxStatement(
 
     @Override
     public String toString() {
-        return printString(0);
+        return prettyString(0);
     }
 
     @Override
-    public String printString(int indent) {
+    public String prettyString(int indent) {
         return "  ".repeat(indent) + String.format("%s %s%s%s%s%s\n%s",
                 forKeywordToken.value(),
                 openBracket.value(),
@@ -30,6 +30,6 @@ public record ForBlockSyntaxStatement(
                 condition.toString(),
                 stepper.toString(),
                 closedBracket.value(),
-                forBlockBody.printString(indent));
+                forBlockBody.prettyString(indent));
     }
 }

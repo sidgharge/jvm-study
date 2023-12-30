@@ -137,11 +137,12 @@ public class Binder {
         Optional<Type> typeOptional = getTypeFromStack(variableReassignmentSyntaxStatement.identifierToken());
         if (typeOptional.isEmpty()) {
             diagnostics.addDiagnostic(variableReassignmentSyntaxStatement.identifierToken(), "Variable '%s' is not defined", name);
-            return null;
         }
         BoundExpression expression = bind(variableReassignmentSyntaxStatement.expression());
 
-        if (!expression.type().equals(typeOptional.get())) {
+        Type type = typeOptional.orElseGet(expression::type);
+
+        if (!expression.type().equals(type)) {
             diagnostics.addDiagnostic(variableReassignmentSyntaxStatement.identifierToken(), "Assigned variable('%s') type is %s, declared with %s", name, typeOptional.get(), expression.type());
         }
         return new VariableReassignmentBoundStatement(
@@ -157,17 +158,31 @@ public class Binder {
         Map<String, Type> types = scopedTypes.getLast();
         if (types.containsKey(name)) {
             diagnostics.addDiagnostic(variableDeclarationSyntaxStatement.letToken(), "Variable '%s' is already defined", name);
-            return null;
         }
+
+        Token colonToken = getOrDefaultToken(variableDeclarationSyntaxStatement.colonToken(), ":", TokenType.COLON_TOKEN);
+
         BoundExpression expression = bind(variableDeclarationSyntaxStatement.expression());
+        Type type = variableDeclarationSyntaxStatement.typeToken() == null ? expression.type() : Type.fromName(variableDeclarationSyntaxStatement.typeToken().value());
+
+        if (!expression.type().equals(type)) {
+            diagnostics.addDiagnostic(variableDeclarationSyntaxStatement.typeToken(), "Declared type `%s` but got `%s`", type, expression.type());
+        }
+
         types.put(name, expression.type());
         return new VariableDeclarationBoundStatement(
                 variableDeclarationSyntaxStatement.letToken(),
                 variableDeclarationSyntaxStatement.identifierToken(),
+                colonToken,
+                expression.type(),
                 variableDeclarationSyntaxStatement.equalsToken(),
                 expression,
                 variableDeclarationSyntaxStatement.semiColonToken()
         );
+    }
+
+    private Token getOrDefaultToken(Token token, String defaultValue, TokenType type) {
+        return token == null ? null : new Token(":", TokenType.COLON_TOKEN, 0, 0, 0);
     }
 
     private ExpressionBoundStatement expressionSyntaxStatement(ExpressionSyntaxStatement expressionSyntaxStatement) {

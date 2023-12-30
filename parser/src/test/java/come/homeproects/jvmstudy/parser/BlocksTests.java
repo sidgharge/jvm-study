@@ -67,6 +67,18 @@ public class BlocksTests {
     }
 
     @Test
+    public void varAssignmentWithType() {
+        String expression = """
+                {
+                    let a: int = 10;
+                    a = a;
+                }
+                """;
+        Object result = repl.evaluateToObject(expression);
+        Assertions.assertThat(result).isEqualTo(10);
+    }
+
+    @Test
     public void varReassignment() {
         String expression = """
                 {

@@ -15,9 +15,11 @@ import come.homeproects.jvmstudy.parser.expressions.UnarySyntaxExpression;
 import come.homeproects.jvmstudy.parser.lexer.Lexer;
 import come.homeproects.jvmstudy.parser.lexer.Token;
 import come.homeproects.jvmstudy.parser.lexer.TokenType;
+import come.homeproects.jvmstudy.parser.statements.TypeDeclarationSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.VariableDeclarationSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.VariableReassignmentSyntaxStatement;
 import come.homeproects.jvmstudy.parser.statements.WhileBlockSyntaxStatement;
+import come.homeproects.jvmstudy.parser.types.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -140,10 +142,19 @@ public class Parser {
     private SyntaxStatement parseVariableDeclaration() {
         Token letToken = matchAndAdvance(TokenType.KEYWORD_LET_TOKEN, "let");
         Token identifierToken = matchAndAdvance(TokenType.IDENTIFIER_TOKEN, "$dummy");
+
+        Token colonToken = null;
+        Token typeToken = null;
+        Token token = current();
+        if (token.type() == TokenType.COLON_TOKEN) {
+            colonToken = matchAndAdvance(TokenType.COLON_TOKEN, ":");
+            typeToken = matchAndAdvance(TokenType.IDENTIFIER_TOKEN, Type.UNKNOWN.name());
+        }
+
         Token equalsToken = matchAndAdvance(TokenType.EQUALS_TOKEN, "=");
         SyntaxExpression expression = parseExpression();
         Token semiColonToken = matchAndAdvance(TokenType.SEMI_COLON_TOKEN, ";");
-        return new VariableDeclarationSyntaxStatement(letToken, identifierToken, equalsToken, expression, semiColonToken);
+        return new VariableDeclarationSyntaxStatement(letToken, identifierToken, colonToken, typeToken, equalsToken, expression, semiColonToken);
     }
 
     private ExpressionSyntaxStatement parseExpressionStatement() {

@@ -59,6 +59,9 @@ public class Lexer {
         if (ch == ';') {
             return singleCharacterToken(";", TokenType.SEMI_COLON_TOKEN);
         }
+        if (ch == ':') {
+            return singleCharacterToken(":", TokenType.COLON_TOKEN);
+        }
 
         if (ch == '&' || ch == '|') {
             return logicalOperator();

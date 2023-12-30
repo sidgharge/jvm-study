@@ -13,13 +13,13 @@ public record ElseBlockSyntaxStatement(
 
     @Override
     public String toString() {
-        return printString(0);
+        return prettyString(0);
     }
 
     @Override
-    public String printString(int indent) {
+    public String prettyString(int indent) {
         return String.format(" %s\n%s",
                 elseKeywordToken.value(),
-                elseBlockBody.printString(indent));
+                elseBlockBody.prettyString(indent));
     }
 }

@@ -20,17 +20,17 @@ public record IfBlockSyntaxStatement(
 
     @Override
     public String toString() {
-        return printString(0);
+        return prettyString(0);
     }
 
     @Override
-    public String printString(int indent) {
+    public String prettyString(int indent) {
         return "  ".repeat(indent) + String.format("%s %s%s%s\n%s%s",
                 ifKeywordToken.value(),
                 openBracket.value(),
                 condition.toString(),
                 closedBracket.value(),
-                ifBlockBody.printString(indent),
-                elseBlockBody.map(e -> e.printString(indent)).orElse(""));
+                ifBlockBody.prettyString(indent),
+                elseBlockBody.map(e -> e.prettyString(indent)).orElse(""));
     }
 }

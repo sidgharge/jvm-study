@@ -12,11 +12,11 @@ public record ExpressionSyntaxStatement(SyntaxExpression expression, Token semiC
 
     @Override
     public String toString() {
-        return printString(0);
+        return prettyString(0);
     }
 
     @Override
-    public String printString(int indent) {
+    public String prettyString(int indent) {
         return "  ".repeat(indent) + expression.toString() + semiColonToken.value();
     }
 }

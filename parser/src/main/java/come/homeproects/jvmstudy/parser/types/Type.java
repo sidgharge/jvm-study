@@ -1,15 +1,31 @@
 package come.homeproects.jvmstudy.parser.types;
 
-public record Type(String name) {
+import java.util.Arrays;
 
-    public static Type INT = new Type("int");
+public enum Type {
 
-    public static Type BOOLEAN = new Type("boolean");
+    INT("int"), BOOLEAN("boolean"), UNKNOWN("unknown");
 
-    public static Type UNKNOWN = new Type("unknown");
+    private final String typeName;
+
+    Type(String typeName) {
+        this.typeName = typeName;
+    }
+
+    public String typeName() {
+        return typeName;
+    }
 
     @Override
     public String toString() {
-        return name;
+        return typeName;
     }
+
+    public static Type fromName(String typeName) {
+        return Arrays.stream(values())
+                .filter(t -> t.typeName.equals(typeName))
+                .findFirst()
+                .orElse(null);
+    }
+
 }

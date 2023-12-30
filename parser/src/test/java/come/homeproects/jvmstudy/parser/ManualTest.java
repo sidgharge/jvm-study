@@ -17,16 +17,7 @@ public class ManualTest {
 
         String expression = """
                 {
-                    let a = 11;
-                    {
-                       for(let b = 5; b < 10; b = b + 2) {
-                            a = a + 2;
-                       }
-                       
-                       for(let b = 15; b < 20; b = b + 1) {
-                            a = a + 2;
-                       }
-                    }
+                    let a: int = 10;
                     a = a;
                 }
                 """;
@@ -36,7 +27,7 @@ public class ManualTest {
 
         System.out.println("Tokens:\n" + binder.tokens().stream().map(Objects::toString).collect(Collectors.joining(" ")));
 
-        System.out.println("Parser AST:\n" + binder.syntaxStatement().printString(0));
+        System.out.println("Parser AST:\n" + binder.syntaxStatement().prettyString(0));
 
         System.out.println("Binder AST:\n" + statement);
 

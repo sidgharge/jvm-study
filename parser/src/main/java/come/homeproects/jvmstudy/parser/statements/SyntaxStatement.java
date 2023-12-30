@@ -4,5 +4,5 @@ public interface SyntaxStatement {
 
     StatementType statementType();
 
-    String printString(int indent);
+    String prettyString(int indent);
 }
