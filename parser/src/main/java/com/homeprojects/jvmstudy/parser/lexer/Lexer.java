@@ -2,6 +2,9 @@ package com.homeprojects.jvmstudy.parser.lexer;
 
 import com.homeprojects.jvmstudy.parser.SourceText;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static java.lang.Character.isAlphabetic;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isWhitespace;
@@ -14,6 +17,18 @@ public class Lexer {
 
     public Lexer(String expression) {
         this.text = new SourceText(expression);
+    }
+
+    public List<Token> tokenize() {
+        List<Token> tokens = new ArrayList<>();
+        while (true) {
+            Token token = nextToken();
+            tokens.add(token);
+            if (token.type() == TokenType.END_OF_FILE_TOKEN) {
+                break;
+            }
+        }
+        return tokens;
     }
 
     public Token nextToken() {

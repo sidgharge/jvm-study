@@ -17,32 +17,27 @@ public class ManualTest {
 
 //    @Test
     public void test() {
-        String expression1 = "var a = 5; a = a + 10";
+        String expression = "1 + true;";
 
-        String expression = """
+        String expression1 = """
                 {
                     println("Enter your name:");
-                    let name = input();
-                    println("Hello", name);
                 }
                 """;
 
-        Binder binder = new Binder();
-        BoundStatement statement = binder.bind(expression);
+        Runner runner = new Runner(expression);
+        runner.run();
 
-        System.out.println("Tokens:\n" + binder.tokens().stream().map(Token::type).map(Objects::toString).collect(Collectors.joining(" ")));
+        System.out.println("Tokens:\n" + runner.tokens().stream().map(Token::type).map(Objects::toString).collect(Collectors.joining(" ")));
 
-        System.out.println("Parser AST:\n" + binder.syntaxStatement().prettyString(0));
+        System.out.println("Parser AST:\n" + runner.syntaxStatement().prettyString(0));
 
-        System.out.println("Binder AST:\n" + statement);
+        System.out.println("Binder AST:\n" + runner.boundStatement());
 
-        if (binder.diagnostics().hasErrors()) {
-            binder.diagnostics().errors().forEach(System.err::println);
+        if (runner.diagnostics().hasErrors()) {
+            runner.diagnostics().errors().forEach(System.err::println);
             Assertions.fail();
             return;
         }
-        System.out.println("--------------------------------------");
-//        System.out.println("result: " + new Evaluator().evaluate(statement));
-        new Evaluator().evaluate(statement);
     }
 }

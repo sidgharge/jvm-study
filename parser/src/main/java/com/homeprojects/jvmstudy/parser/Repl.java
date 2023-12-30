@@ -17,16 +17,7 @@ public class Repl {
     }
 
     public Object evaluateToObject(String expression) {
-        return evaluateToObject(expression, false);
-    }
-
-    public Object evaluateToObject(String expression, boolean debug) {
-        Binder binder = new Binder();
-        BoundStatement boundStatement = binder.bind(expression);
-        if (debug) {
-            printDebugInfo(binder, boundStatement);
-        }
-        return new Evaluator().evaluate(boundStatement);
+        return new Runner(expression).run();
     }
 
     public static void main(String[] args) {
@@ -36,8 +27,6 @@ public class Repl {
 
     public static void repl() {
         boolean debug = false;
-        Binder binder = new Binder();
-        Evaluator evaluator = new Evaluator();
         StringBuilder builder = new StringBuilder();
         try(Scanner scanner = new Scanner(System.in)) {
             while (true) {
@@ -58,29 +47,32 @@ public class Repl {
                 if (line.equals("cls") || line.equals("clear")) {
                     try {
                         new ProcessBuilder(line).inheritIO().start().exitValue();
+                        builder = new StringBuilder();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
+                builder.append(line);
                 if (line.isEmpty() || line.lastIndexOf('\'') != line.length() - 1) {
-                    builder.append(line);
                     continue;
                 }
 
+                builder.deleteCharAt(builder.length() - 1);
                 line = builder.toString();
+
                 builder = new StringBuilder();
 
-                binder.diagnostics().errors().clear();
-                BoundStatement statement = binder.bind(line);
+                Runner runner = new Runner(line);
+                Object result = runner.run();
 
                 if (debug) {
-                    printDebugInfo(binder, statement);
+                    printDebugInfo(runner);
                 }
 
-                if (binder.diagnostics().hasErrors()) {
-                    binder.diagnostics().errors().forEach(Repl::printDiagnostic);
+                if (runner.diagnostics().hasErrors()) {
+                    runner.diagnostics().errors().forEach(Repl::printDiagnostic);
                 } else {
-                    System.out.println("=> " + evaluator.evaluate(statement));
+                    System.out.println("=> " + result);
                 }
             }
         }
@@ -95,11 +87,15 @@ public class Repl {
         System.out.println(str);
     }
 
-    private static void printDebugInfo(Binder binder, BoundStatement statement) {
-        System.out.println("Tokens:\n" + binder.tokens().stream().map(Objects::toString).collect(Collectors.joining(" ")));
+    private static void printDebugInfo(Runner runner) {
+        System.out.println("Tokens:\n" + runner.tokens().stream()
+                .map(token -> String.format("'%s': %s", token.value(), token.type()))
+                .collect(Collectors.joining(", ")));
 
-        System.out.println("Parser AST:\n" + binder.syntaxStatement().prettyString(0));
+        System.out.println("Parser AST:\n" + runner.syntaxStatement().prettyString(0));
 
-        System.out.println("Binder AST:\n" + statement);
+        System.out.println("Binder AST:\n" + runner.boundStatement());
+
+        System.out.println("Lowered Statements:\n" + runner.boundStatement());
     }
 }

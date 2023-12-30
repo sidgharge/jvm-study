@@ -29,31 +29,22 @@ import java.util.Optional;
 
 public class Parser {
 
-    private final Lexer lexer;
+    private final List<Token> tokens;
 
     private final TokenPrecedence tokenPrecedence;
 
     private final Diagnostics diagnostics;
 
-    private final List<Token> tokens;
-
     private int index;
 
-    public Parser(String expression) {
-        this.lexer = new Lexer(expression);
-        this.diagnostics = new Diagnostics();
-        this.tokens = new ArrayList<>();
+    public Parser(List<Token> tokens) {
+        this.tokens = tokens;
         this.index = 0;
+        this.diagnostics = new Diagnostics();
         this.tokenPrecedence = new TokenPrecedence();
     }
 
-
     public SyntaxStatement parse() {
-        tokenize();
-        return parseTillEnd();
-    }
-
-    private SyntaxStatement parseTillEnd() {
         List<SyntaxStatement> statements = new ArrayList<>();
         while (true) {
             if (current().type().equals(TokenType.END_OF_FILE_TOKEN)) {
@@ -311,40 +302,7 @@ public class Parser {
         return index >= tokens.size() - 1;
     }
 
-    private void tokenize() {
-        Token token = null;
-        while (true) {
-            token = this.lexer.nextToken();
-            this.tokens.add(token);
-            if (token.type() == TokenType.END_OF_FILE_TOKEN) {
-                break;
-            }
-        }
-    }
-
     public Diagnostics diagnostics() {
         return diagnostics;
-    }
-
-    public void printTokens() {
-        System.out.println("--------------- TOKENS -------------------------");
-        for (Token token : this.tokens) {
-            System.out.println(token);
-        }
-        System.out.println();
-    }
-
-    public void printErrors() {
-        if (!this.diagnostics.hasErrors()) {
-            return;
-        }
-        System.err.println("--------------- ERRORS -------------------------");
-        for (Diagnostic diagnostic : this.diagnostics.errors()) {
-            System.err.println(diagnostic.message());
-        }
-    }
-
-    public List<Token> tokens() {
-        return this.tokens;
     }
 }

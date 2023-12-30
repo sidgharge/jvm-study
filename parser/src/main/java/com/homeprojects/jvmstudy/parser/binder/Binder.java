@@ -1,6 +1,5 @@
 package com.homeprojects.jvmstudy.parser.binder;
 
-import com.homeprojects.jvmstudy.parser.Parser;
 import com.homeprojects.jvmstudy.parser.binder.expressions.ArgumentBoundExpression;
 import com.homeprojects.jvmstudy.parser.binder.expressions.ArgumentsBound;
 import com.homeprojects.jvmstudy.parser.binder.expressions.BinaryBoundExpression;
@@ -34,7 +33,6 @@ import com.homeprojects.jvmstudy.parser.expressions.BinarySyntaxExpression;
 import com.homeprojects.jvmstudy.parser.expressions.LiteralSyntaxExpression;
 import com.homeprojects.jvmstudy.parser.expressions.UnarySyntaxExpression;
 import com.homeprojects.jvmstudy.parser.lexer.TokenType;
-import com.homeprojects.jvmstudy.parser.lowerer.Lowerer;
 import com.homeprojects.jvmstudy.parser.statements.ForBlockSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.VariableDeclarationSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.types.Type;
@@ -51,29 +49,23 @@ public class Binder {
 
     private final List<Map<String, Type>> scopedTypes;
 
-    private List<Token> tokens;
-
-    private SyntaxStatement syntaxStatement;
-
     private final Map<String, Type> methods;
 
-    public Binder() {
+    private final SyntaxStatement parent;
+
+    public Binder(SyntaxStatement syntaxStatement) {
+        this.parent = syntaxStatement;
         this.diagnostics = new Diagnostics();
         this.scopedTypes = new ArrayList<>();
         this.methods = new HashMap<>();
         addGlobalMethods();
     }
 
-    public BoundStatement bind(String inputExpression) {
-        Parser parser = new Parser(inputExpression);
-        this.syntaxStatement = parser.parse();
-        this.tokens = parser.tokens();
-        parser.diagnostics().errors().forEach(diagnostics::add);
-        BoundStatement boundStatement = bind(syntaxStatement);
-        return new Lowerer().lower(boundStatement);
+    public BoundStatement bind() {
+        return syntaxStatement(parent);
     }
 
-    private BoundStatement bind(SyntaxStatement statement) {
+    private BoundStatement syntaxStatement(SyntaxStatement statement) {
         return switch (statement) {
             case BlockSyntaxStatement blockSyntaxStatement -> blockSyntaxStatement(blockSyntaxStatement);
             case ExpressionSyntaxStatement expressionSyntaxStatement -> expressionSyntaxStatement(expressionSyntaxStatement);
@@ -88,14 +80,14 @@ public class Binder {
 
     private ForBlockBoundStatement forBlockSyntaxStatement(ForBlockSyntaxStatement forBlockSyntaxStatement) {
         scopedTypes.add(new HashMap<>());
-        BoundStatement initializer = bind(forBlockSyntaxStatement.initializer());
+        BoundStatement initializer = syntaxStatement(forBlockSyntaxStatement.initializer());
 
         ExpressionBoundStatement condition = expressionSyntaxStatement(forBlockSyntaxStatement.condition());
         if (!condition.expression().type().equals(Type.BOOLEAN)) {
             diagnostics.addDiagnostic(forBlockSyntaxStatement.forKeywordToken(), "condition in `for` loop should evaluate to a boolean, but got `%s`", condition.expression().type());
         }
 
-        BoundStatement stepper = bind(forBlockSyntaxStatement.stepper());
+        BoundStatement stepper = syntaxStatement(forBlockSyntaxStatement.stepper());
         BlockBoundStatement body = blockSyntaxStatement(forBlockSyntaxStatement.forBlockBody());
 
         scopedTypes.removeLast();
@@ -104,7 +96,7 @@ public class Binder {
     }
 
     private WhileBlockBoundStatement whileBlockSyntaxStatement(WhileBlockSyntaxStatement whileBlockSyntaxStatement) {
-        BoundExpression condition = bind(whileBlockSyntaxStatement.condition());
+        BoundExpression condition = syntaxExpression(whileBlockSyntaxStatement.condition());
         if(!condition.type().equals(Type.BOOLEAN)) {
             diagnostics.addDiagnostic(whileBlockSyntaxStatement.whileKeywordToken(), "Condition inside `while` should evaluate to a boolean, but got `%s`", condition.type());
         }
@@ -119,7 +111,7 @@ public class Binder {
     }
 
     private IfBlockBoundStatement ifBlockSyntaxStatement(IfBlockSyntaxStatement ifBlockSyntaxStatement) {
-        BoundExpression condition = bind(ifBlockSyntaxStatement.condition());
+        BoundExpression condition = syntaxExpression(ifBlockSyntaxStatement.condition());
         if(!condition.type().equals(Type.BOOLEAN)) {
             diagnostics.addDiagnostic(ifBlockSyntaxStatement.ifKeywordToken(), "Condition inside `if` should evaluate to a boolean, but got `%s`", condition.type());
         }
@@ -147,7 +139,7 @@ public class Binder {
         if (typeOptional.isEmpty()) {
             diagnostics.addDiagnostic(variableReassignmentSyntaxStatement.identifierToken(), "Variable '%s' is not defined", name);
         }
-        BoundExpression expression = bind(variableReassignmentSyntaxStatement.expression());
+        BoundExpression expression = syntaxExpression(variableReassignmentSyntaxStatement.expression());
 
         Type type = typeOptional.orElseGet(expression::type);
 
@@ -171,7 +163,7 @@ public class Binder {
 
         Token colonToken = getOrDefaultToken(variableDeclarationSyntaxStatement.colonToken(), ":", TokenType.COLON_TOKEN);
 
-        BoundExpression expression = bind(variableDeclarationSyntaxStatement.expression());
+        BoundExpression expression = syntaxExpression(variableDeclarationSyntaxStatement.expression());
         Type type = variableDeclarationSyntaxStatement.typeToken() == null ? expression.type() : Type.fromName(variableDeclarationSyntaxStatement.typeToken().value());
 
         if (!expression.type().equals(type)) {
@@ -195,7 +187,7 @@ public class Binder {
     }
 
     private ExpressionBoundStatement expressionSyntaxStatement(ExpressionSyntaxStatement expressionSyntaxStatement) {
-        BoundExpression expression = bind(expressionSyntaxStatement.expression());
+        BoundExpression expression = syntaxExpression(expressionSyntaxStatement.expression());
         return new ExpressionBoundStatement(expression, expressionSyntaxStatement.semiColonToken());
     }
 
@@ -203,7 +195,7 @@ public class Binder {
         scopedTypes.add(new HashMap<>());
         ArrayList<BoundStatement> statements = new ArrayList<>();
         for (SyntaxStatement statement: blockSyntaxStatement.statements()) {
-            BoundStatement boundStatement = bind(statement);
+            BoundStatement boundStatement = syntaxStatement(statement);
             if (boundStatement != null) {
                 statements.add(boundStatement);
             }
@@ -212,7 +204,7 @@ public class Binder {
         return new BlockBoundStatement(blockSyntaxStatement.openBracket(), blockSyntaxStatement.closedBracket(), statements);
     }
 
-    public BoundExpression bind(SyntaxExpression syntaxExpression) {
+    public BoundExpression syntaxExpression(SyntaxExpression syntaxExpression) {
         return switch (syntaxExpression) {
             case LiteralSyntaxExpression literalExpression -> literalExpression(literalExpression);
             case UnarySyntaxExpression unaryExpression -> unaryExpression(unaryExpression);
@@ -250,13 +242,13 @@ public class Binder {
     }
 
     private ArgumentBoundExpression argumentSyntax(ArgumentSyntax argumentSyntax) {
-        BoundExpression expression = bind(argumentSyntax.expression());
+        BoundExpression expression = syntaxExpression(argumentSyntax.expression());
         return new ArgumentBoundExpression(expression, argumentSyntax.commaToken());
     }
 
     private BinaryBoundExpression binaryExpression(BinarySyntaxExpression binaryExpression) {
-        BoundExpression left = bind(binaryExpression.left());
-        BoundExpression right = bind(binaryExpression.right());
+        BoundExpression left = syntaxExpression(binaryExpression.left());
+        BoundExpression right = syntaxExpression(binaryExpression.right());
         Token operatorToken = binaryExpression.token();
 
         if (left.type().equals(Type.UNKNOWN) || right.type().equals(Type.UNKNOWN)) {
@@ -301,7 +293,7 @@ public class Binder {
     }
 
     private UnaryBoundExpression unaryExpression(UnarySyntaxExpression unaryExpression) {
-        BoundExpression expression = bind(unaryExpression.syntaxExpression());
+        BoundExpression expression = syntaxExpression(unaryExpression.syntaxExpression());
         Token operator = unaryExpression.operator();
 
         switch (operator.type()) {
@@ -360,13 +352,5 @@ public class Binder {
 
     public Diagnostics diagnostics() {
         return diagnostics;
-    }
-
-    public List<Token> tokens() {
-        return tokens;
-    }
-
-    public SyntaxStatement syntaxStatement() {
-        return syntaxStatement;
     }
 }

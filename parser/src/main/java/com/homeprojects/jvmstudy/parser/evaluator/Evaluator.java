@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 
 public class Evaluator {
 
+    private final BoundStatement parent;
+
     private final List<Map<String, Object>> variables;
 
     private final List<Map<Label, Integer>> labels;
@@ -39,20 +41,21 @@ public class Evaluator {
 
     private Object lastValue;
 
-    public Evaluator() {
+    public Evaluator(BoundStatement parent) {
+        this.parent = parent;
         this.variables = new ArrayList<>();
         this.labels = new ArrayList<>();
         this.methods = new HashMap<>();
         addGlobalMethods();
     }
 
-    public Object evaluate(BoundStatement statement) {
-        Object result = boundStatement(statement);
+    public Object evaluate() {
+        Object result = boundStatement(parent);
         lastValue = null;
         return result;
     } 
     
-    public Object boundStatement(BoundStatement statement) {
+    private Object boundStatement(BoundStatement statement) {
         switch (statement) {
             case ExpressionBoundStatement expressionBoundStatement -> expressionBoundStatement(expressionBoundStatement);
             case BlockBoundStatement blockBoundStatement -> blockBoundStatement(blockBoundStatement);
@@ -120,7 +123,7 @@ public class Evaluator {
         lastValue = boundExpression(expressionBoundStatement.expression());
     }
 
-    public Object boundExpression(BoundExpression expression) {
+    private Object boundExpression(BoundExpression expression) {
         return switch (expression) {
             case BinaryBoundExpression binaryExpression -> binaryExpression(binaryExpression);
             case UnaryBoundExpression unaryExpression -> unaryExpression(unaryExpression);

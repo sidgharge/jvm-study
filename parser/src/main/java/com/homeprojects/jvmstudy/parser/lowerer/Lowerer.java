@@ -12,13 +12,20 @@ import java.util.stream.Collectors;
 
 public class Lowerer {
 
+    private final BoundStatement parent;
+
     private int labelCounter;
 
-    public Lowerer() {
+    public Lowerer(BoundStatement parent) {
+        this.parent = parent;
         this.labelCounter = 0;
     }
 
-    public BoundStatement lower(BoundStatement boundStatement) {
+    public BoundStatement lower() {
+        return boundStatement(parent);
+    }
+
+    private BoundStatement boundStatement(BoundStatement boundStatement) {
         return switch (boundStatement) {
             case BlockBoundStatement blockBoundStatement -> blockBoundStatement(blockBoundStatement);
             case IfBlockBoundStatement ifBlockBoundStatement -> ifBlockBoundStatement(ifBlockBoundStatement);
@@ -29,7 +36,7 @@ public class Lowerer {
     }
 
     private BlockBoundStatement blockBoundStatement(BlockBoundStatement blockBoundStatement) {
-        List<BoundStatement> statements = blockBoundStatement.statements().stream().map(this::lower).collect(Collectors.toList());
+        List<BoundStatement> statements = blockBoundStatement.statements().stream().map(this::boundStatement).collect(Collectors.toList());
         if (statements.equals(blockBoundStatement.statements())) {
             return blockBoundStatement;
         }
@@ -83,7 +90,7 @@ public class Lowerer {
         Label startLabel = newLabel();
         Label endLabel = newLabel();
 
-        statements.add(lower(forStatement.initializer()));
+        statements.add(boundStatement(forStatement.initializer()));
 
         statements.add(new LabelBoundStatement(startLabel));
 
@@ -92,7 +99,7 @@ public class Lowerer {
         List<BoundStatement> whileBodyStatements = blockBoundStatement(forStatement.forBlockBody()).statements();
         statements.addAll(whileBodyStatements);
 
-        statements.add(lower(forStatement.stepper()));
+        statements.add(boundStatement(forStatement.stepper()));
 
         statements.add(new GotoBoundStatement(startLabel));
 
