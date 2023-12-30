@@ -5,15 +5,8 @@ import com.homeprojects.jvmstudy.parser.binder.statements.BoundStatement;
 import com.homeprojects.jvmstudy.parser.evaluator.Evaluator;
 import com.homeprojects.jvmstudy.parser.lexer.Token;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ManualTest {
@@ -22,7 +15,7 @@ public class ManualTest {
         new ManualTest().test();
     }
 
-    @Test
+//    @Test
     public void test() {
         String expression1 = "var a = 5; a = a + 10";
 
@@ -49,6 +42,7 @@ public class ManualTest {
             return;
         }
         System.out.println("--------------------------------------");
-        System.out.println("result: " + new Evaluator().evaluate(statement));
+//        System.out.println("result: " + new Evaluator().evaluate(statement));
+        new Evaluator().evaluate(statement);
     }
 }
