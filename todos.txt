@@ -1,3 +1,2 @@
 - Think about binder and error messages propagating
 - better errors
-- fix project package name
