@@ -43,7 +43,8 @@ public enum TokenType {
     KEYWORD_IF_TOKEN,
     KEYWORD_ELSE_TOKEN,
     KEYWORD_WHILE_TOKEN,
-    KEYWORD_FOR_TOKEN;
+    KEYWORD_FOR_TOKEN,
+    KEYWORD_RETURN_TOKEN;
 
     public boolean isMathematicalOperatorToken() {
         return this == PLUS_TOKEN ||

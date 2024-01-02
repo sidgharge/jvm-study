@@ -1,8 +1,5 @@
 package com.homeprojects.jvmstudy.parser;
 
-import com.homeprojects.jvmstudy.parser.binder.Binder;
-import com.homeprojects.jvmstudy.parser.binder.statements.BoundStatement;
-import com.homeprojects.jvmstudy.parser.evaluator.Evaluator;
 import com.homeprojects.jvmstudy.parser.lexer.Token;
 import org.junit.jupiter.api.Assertions;
 
@@ -17,12 +14,18 @@ public class ManualTest {
 
 //    @Test
     public void test() {
-        String expression = "1 + true;";
+        String expression = """
+                sum(numOne: int, numTwo: int): int {
+                    let addition: int =  numOne + numTwo;
+                    return addition;
+                }
+                
+                sum("4", 5, "6");
+                """;
 
         String expression1 = """
-                {
-                    println("Enter your name:");
-                }
+                let str: int = input("hello");
+                println(str);
                 """;
 
         Runner runner = new Runner(expression);

@@ -3,33 +3,35 @@ package com.homeprojects.jvmstudy.parser.diagnostics;
 import com.homeprojects.jvmstudy.parser.lexer.Token;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class Diagnostics {
 
-    private final List<Diagnostic> errors;
+    private final TreeSet<Diagnostic> errors;
 
     public Diagnostics() {
-        errors = new ArrayList<>();
+        errors = new TreeSet<>(
+                Comparator.comparingInt(Diagnostic::lineNumber)
+                        .thenComparingInt(Diagnostic::startIndex));
     }
 
     public boolean hasErrors() {
         return !errors.isEmpty();
     }
 
-    public List<Diagnostic> errors() {
+    public Set<Diagnostic> errors() {
         return errors;
     }
-
-//    public void addDiagnostic(String error, Object... args) {
-//        errors.add(String.format(error, args));
-//    }
+    
     public void addDiagnostic(Token token, String error, Object... args) {
         this.errors.add(new Diagnostic(String.format(error, args), token.startIndex(), token.endIndex(), token.lineNumber()));;
     }
 
-    public void addDiagnostic(String error, Object... args) {
-        this.errors.add(new Diagnostic(String.format(error, args), 0, 0, 0));;
+    public void addDiagnostic(int startIndex, int endIndex, int lineNumber, String error, Object... args) {
+        this.errors.add(new Diagnostic(String.format(error, args), startIndex, endIndex, lineNumber));;
     }
 
     public void add(Diagnostic diagnostic) {

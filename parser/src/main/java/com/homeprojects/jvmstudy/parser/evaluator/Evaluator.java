@@ -10,6 +10,9 @@ import com.homeprojects.jvmstudy.parser.binder.expressions.BoundExpression;
 import com.homeprojects.jvmstudy.parser.binder.expressions.LiteralBoundExpression;
 import com.homeprojects.jvmstudy.parser.binder.expressions.UnaryBoundExpression;
 import com.homeprojects.jvmstudy.parser.binder.statements.ExpressionBoundStatement;
+import com.homeprojects.jvmstudy.parser.binder.statements.MethodDeclarationBoundStatement;
+import com.homeprojects.jvmstudy.parser.binder.statements.ParameterBound;
+import com.homeprojects.jvmstudy.parser.binder.statements.ReturnBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.VariableDeclarationBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.VariableReassignmentBoundStatement;
 import com.homeprojects.jvmstudy.parser.lowerer.ConditionalGotoBoundStatement;
@@ -62,9 +65,31 @@ public class Evaluator {
             case VariableDeclarationBoundStatement variableDeclarationBoundStatement -> variableDeclarationBoundStatement(variableDeclarationBoundStatement);
             case VariableReassignmentBoundStatement variableReassignmentBoundStatement -> variableReassignmentBoundStatement(variableReassignmentBoundStatement);
             case LabelBoundStatement __ -> {}
+            case MethodDeclarationBoundStatement methodDeclarationBoundStatement -> methodDeclarationBoundStatement(methodDeclarationBoundStatement);
+            case ReturnBoundStatement returnBoundStatement -> returnBoundStatement(returnBoundStatement);
             default -> throw new RuntimeException("Unhandled statement type: " + statement.getClass());
         }
         return lastValue;
+    }
+
+    private void returnBoundStatement(ReturnBoundStatement returnBoundStatement) {
+        lastValue = boundExpression(returnBoundStatement.expression());
+    }
+
+    private void methodDeclarationBoundStatement(MethodDeclarationBoundStatement methodDeclarationBoundStatement) {
+        String methodName = methodDeclarationBoundStatement.methodNameToken().value();
+        List<ParameterBound> parameters = methodDeclarationBoundStatement.parametersBound().parameters();
+        Function<List<Object>, Object> fn = list -> {
+            variables.add(new HashMap<>());
+            for (int i = 0; i < parameters.size(); i++) {
+                ParameterBound parameter = parameters.get(i);
+                variables.getLast().put(parameter.parameterNameToken().value(), list.get(i));
+            }
+            blockBoundStatement(methodDeclarationBoundStatement.methodBody());
+            variables.removeLast();
+            return lastValue;
+        };
+        methods.put(methodName, fn);
     }
 
     private void variableReassignmentBoundStatement(VariableReassignmentBoundStatement variableReassignmentBoundStatement) {
@@ -140,7 +165,8 @@ public class Evaluator {
             Object arg = argumentBoundExpression(expressions.get(i));
             args[i] = arg;
         }
-        return invokeMethod(methodCallBoundExpression.methodName().value(), args);
+        invokeMethod(methodCallBoundExpression.methodName().value(), args);
+        return lastValue;
     }
 
     private Object argumentBoundExpression(ArgumentBoundExpression argumentBoundExpression) {
@@ -217,16 +243,16 @@ public class Evaluator {
         Function<List<Object>, Object> input = (__) -> {
             Scanner scanner = new Scanner(System.in);
             String line = scanner.nextLine();
-            scanner.close();
+//            scanner.close();
             return line;
         };
         this.methods.put("input", input);
     }
 
-    private Object invokeMethod(String name, Object... params) {
+    private void invokeMethod(String name, Object... params) {
         Object o = methods.get(name);
         try {
-            return o.getClass().getDeclaredMethod("apply", Object.class).invoke(o, Arrays.asList(params));
+            lastValue = o.getClass().getDeclaredMethod("apply", Object.class).invoke(o, Arrays.asList(params));
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }

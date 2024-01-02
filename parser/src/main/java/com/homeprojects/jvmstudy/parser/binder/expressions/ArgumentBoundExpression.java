@@ -11,6 +11,21 @@ public record ArgumentBoundExpression(BoundExpression expression, Token commaTok
     }
 
     @Override
+    public int startIndex() {
+        return expression.startIndex();
+    }
+
+    @Override
+    public int endIndex() {
+        return expression.endIndex();
+    }
+
+    @Override
+    public int lineNumber() {
+        return expression.lineNumber();
+    }
+
+    @Override
     public String toString() {
         return String.format("(%s: %s)%s", expression.toString(), type().typeName(), commaToken == null ? "" : commaToken.value());
     }

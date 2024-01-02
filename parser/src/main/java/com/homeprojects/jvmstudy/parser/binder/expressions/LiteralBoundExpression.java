@@ -9,4 +9,19 @@ public record LiteralBoundExpression(Token token, Type type) implements BoundExp
     public String toString() {
         return token.value();
     }
+
+    @Override
+    public int startIndex() {
+        return token.startIndex();
+    }
+
+    @Override
+    public int endIndex() {
+        return token.endIndex();
+    }
+
+    @Override
+    public int lineNumber() {
+        return token.lineNumber();
+    }
 }

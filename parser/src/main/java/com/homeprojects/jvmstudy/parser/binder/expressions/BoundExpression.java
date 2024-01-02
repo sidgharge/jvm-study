@@ -6,7 +6,13 @@ public interface BoundExpression {
 
     Type type();
 
-    record NoOpBoundExpression(String dummyValue) implements BoundExpression {
+    int startIndex();
+
+    int endIndex();
+
+    int lineNumber();
+
+    record NoOpBoundExpression(String dummyValue, int startIndex, int endIndex, int lineNumber) implements BoundExpression {
 
         @Override
         public Type type() {

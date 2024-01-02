@@ -11,6 +11,10 @@ import com.homeprojects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.BoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.ElseBlockBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.IfBlockBoundStatement;
+import com.homeprojects.jvmstudy.parser.binder.statements.MethodDeclarationBoundStatement;
+import com.homeprojects.jvmstudy.parser.binder.statements.ParameterBound;
+import com.homeprojects.jvmstudy.parser.binder.statements.ParametersBound;
+import com.homeprojects.jvmstudy.parser.binder.statements.ReturnBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.VariableReassignmentBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.WhileBlockBoundStatement;
 import com.homeprojects.jvmstudy.parser.diagnostics.Diagnostics;
@@ -23,6 +27,10 @@ import com.homeprojects.jvmstudy.parser.statements.ElseBlockSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.ExpressionSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.IfBlockSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.MethodCallSyntaxExpression;
+import com.homeprojects.jvmstudy.parser.statements.MethodDeclarationSyntaxStatement;
+import com.homeprojects.jvmstudy.parser.statements.ParameterSyntax;
+import com.homeprojects.jvmstudy.parser.statements.ParametersSyntax;
+import com.homeprojects.jvmstudy.parser.statements.ReturnSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.SyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.VariableReassignmentSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.WhileBlockSyntaxStatement;
@@ -38,6 +46,7 @@ import com.homeprojects.jvmstudy.parser.statements.VariableDeclarationSyntaxStat
 import com.homeprojects.jvmstudy.parser.types.Type;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +58,7 @@ public class Binder {
 
     private final List<Map<String, Type>> scopedTypes;
 
-    private final Map<String, Type> methods;
+    private final Map<String, MethodDeclarationBoundStatement> methods;
 
     private final SyntaxStatement parent;
 
@@ -74,8 +83,59 @@ public class Binder {
             case IfBlockSyntaxStatement ifBlockSyntaxStatement -> ifBlockSyntaxStatement(ifBlockSyntaxStatement);
             case WhileBlockSyntaxStatement whileBlockSyntaxStatement -> whileBlockSyntaxStatement(whileBlockSyntaxStatement);
             case ForBlockSyntaxStatement forBlockSyntaxStatement -> forBlockSyntaxStatement(forBlockSyntaxStatement);
+            case MethodDeclarationSyntaxStatement methodDeclarationSyntaxStatement -> methodDeclarationSyntaxStatement(methodDeclarationSyntaxStatement);
+            case ReturnSyntaxStatement returnSyntaxStatement -> returnSyntaxStatement(returnSyntaxStatement);
             default -> throw new RuntimeException("Unhandled statement type: " + statement.statementType());
         };
+    }
+
+    private ReturnBoundStatement returnSyntaxStatement(ReturnSyntaxStatement returnSyntaxStatement) {
+        BoundExpression expression = syntaxExpression(returnSyntaxStatement.expression());
+        return new ReturnBoundStatement(returnSyntaxStatement.returnToken(), expression, returnSyntaxStatement.semiColonToken());
+    }
+
+    private MethodDeclarationBoundStatement methodDeclarationSyntaxStatement(MethodDeclarationSyntaxStatement methodDeclarationSyntaxStatement) {
+        ParametersSyntax parameters = methodDeclarationSyntaxStatement.parameters();
+        ParametersBound parametersBound = parametersSyntax(parameters);
+
+        scopedTypes.add(new HashMap<>());
+
+        for (ParameterBound parameter : parametersBound.parameters()) {
+            scopedTypes.getLast().put(parameter.parameterNameToken().value(), parameter.type());
+        }
+
+        BlockBoundStatement body = blockSyntaxStatement(methodDeclarationSyntaxStatement.methodBody());
+
+        Type returnType = Type.fromName(methodDeclarationSyntaxStatement.returnTypeToken().value());
+
+        MethodDeclarationBoundStatement methodDeclarationBoundStatement = new MethodDeclarationBoundStatement(
+                methodDeclarationSyntaxStatement.methodNameToken(),
+                methodDeclarationSyntaxStatement.openBracketToken(),
+                parametersBound,
+                methodDeclarationSyntaxStatement.closedBracketToken(),
+                body,
+                methodDeclarationSyntaxStatement.colonToken(),
+                returnType
+        );
+
+        scopedTypes.removeLast();
+
+        methods.put(methodDeclarationBoundStatement.methodNameToken().value(), methodDeclarationBoundStatement);
+        return methodDeclarationBoundStatement;
+    }
+
+    private ParametersBound parametersSyntax(ParametersSyntax parameters) {
+        List<ParameterBound> parameterBounds = new ArrayList<>();
+        for (ParameterSyntax parameter : parameters.parameters()) {
+            ParameterBound parameterBound = parameterSyntax(parameter);
+            parameterBounds.add(parameterBound);
+        }
+        return new ParametersBound(parameterBounds);
+    }
+
+    private ParameterBound parameterSyntax(ParameterSyntax parameter) {
+        Type type = Type.fromName(parameter.typeToken().value());
+        return new ParameterBound(parameter.parameterNameToken(), parameter.semiColonToken(), type, parameter.commaToken());
     }
 
     private ForBlockBoundStatement forBlockSyntaxStatement(ForBlockSyntaxStatement forBlockSyntaxStatement) {
@@ -215,21 +275,51 @@ public class Binder {
     }
 
     private MethodCallBoundExpression methodCallSyntaxExpression(MethodCallSyntaxExpression methodCallSyntaxExpression) {
-        ArgumentsBound arguments = argumentsSyntax(methodCallSyntaxExpression.argumentsSyntax());
+        ArgumentsBound argumentsBound = argumentsSyntax(methodCallSyntaxExpression.argumentsSyntax());
 
-        Type type = findMethod(methodCallSyntaxExpression.methodName().value(), arguments);
+        MethodDeclarationBoundStatement method = findMethod(methodCallSyntaxExpression.methodName().value(), argumentsBound);
+
+        if (method.methodNameToken().value().equals("println")) {
+            return new MethodCallBoundExpression(
+                    methodCallSyntaxExpression.methodName(),
+                    methodCallSyntaxExpression.openBrace(),
+                    argumentsBound,
+                    methodCallSyntaxExpression.closedBrace(),
+                    Type.STRING
+            );
+        }
+        List<ArgumentBoundExpression> arguments = argumentsBound.expressions();
+        List<ParameterBound> parameters = method.parametersBound().parameters();
+
+        for (int i = 0; i < parameters.size(); i++) {
+            ParameterBound parameter = parameters.get(i);
+            if (arguments.size() <= i) {
+                Token closedBrace = methodCallSyntaxExpression.closedBrace();
+                diagnostics.addDiagnostic(closedBrace.startIndex(), closedBrace.endIndex(), closedBrace.lineNumber(), "Expected %d arguments but got %s", parameters.size(), arguments.size());
+                break;
+            }
+            ArgumentBoundExpression argument = arguments.get(i);
+            if (argument.expression().type() != parameter.type()) {
+                diagnostics.addDiagnostic(argument.startIndex(), argument.endIndex(), argument.lineNumber(), "Expected `%s` but got `%s`", parameter.type(), argument.type());
+            }
+        }
+
+        for (int i = parameters.size(); i < arguments.size(); i++) {
+            ArgumentBoundExpression argument = arguments.get(i);
+            diagnostics.addDiagnostic(argument.startIndex(), argument.endIndex(), argument.lineNumber(), "Unknown argument");
+        }
 
         return new MethodCallBoundExpression(
                 methodCallSyntaxExpression.methodName(),
                 methodCallSyntaxExpression.openBrace(),
-                arguments,
+                argumentsBound,
                 methodCallSyntaxExpression.closedBrace(),
-                type
+                method.returnType()
         );
     }
 
-    private Type findMethod(String methodName, ArgumentsBound arguments) {
-        return methods.getOrDefault(methodName, Type.UNKNOWN);
+    private MethodDeclarationBoundStatement findMethod(String methodName, ArgumentsBound arguments) {
+        return methods.get(methodName);
     }
 
     private ArgumentsBound argumentsSyntax(ArgumentsSyntax argumentsSyntax) {
@@ -327,13 +417,13 @@ public class Binder {
             Optional<Type> type = getTypeFromStack(token);
             if (type.isEmpty()) {
                 this.diagnostics.addDiagnostic(token, "Variable '%s' is not in scope", token.value());
-                return new BoundExpression.NoOpBoundExpression(token.value());
+                return new BoundExpression.NoOpBoundExpression(token.value(), token.startIndex(), token.endIndex(), token.lineNumber());
             }
             return new LiteralBoundExpression(token, type.get());
         }
 
         this.diagnostics.addDiagnostic(token, "Unknown syntax '%s'", token.value());
-        return new BoundExpression.NoOpBoundExpression(token.value());
+        return new BoundExpression.NoOpBoundExpression(token.value(), token.startIndex(), token.endIndex(), token.lineNumber());
     }
 
     private Optional<Type> getTypeFromStack(Token token) {
@@ -346,8 +436,8 @@ public class Binder {
     }
 
     private void addGlobalMethods() {
-        methods.put("input", Type.STRING);
-        methods.put("println", Type.VOID);
+        methods.put("input", new MethodDeclarationBoundStatement(new Token("input", TokenType.IDENTIFIER_TOKEN, 0 , 0, 0), null, new ParametersBound(Collections.emptyList()), null, null, null, Type.STRING));
+        methods.put("println", new MethodDeclarationBoundStatement(new Token("println", TokenType.IDENTIFIER_TOKEN, 0 , 0, 0), null, null, null, null, null, Type.STRING));
     }
 
     public Diagnostics diagnostics() {
