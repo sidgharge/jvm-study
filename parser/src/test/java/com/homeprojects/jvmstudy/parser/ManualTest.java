@@ -15,12 +15,16 @@ public class ManualTest {
 //    @Test
     public void test() {
         String expression = """
-                sum(numOne: int, numTwo: int): int {
-                    let addition: int =  numOne + numTwo;
-                    return addition;
+                {
+                    let a = 10;
+                    
+                    sum(p: int, q: int): int {
+                        let r: int = p + q;
+                        return r;
+                    }
+                    
+                    sum(5, a);
                 }
-                
-                sum("4", 5, "6");
                 """;
 
         String expression1 = """
