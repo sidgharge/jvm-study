@@ -47,8 +47,10 @@ import com.homeprojects.jvmstudy.parser.types.Type;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class Binder {
 
@@ -128,9 +130,16 @@ public class Binder {
 
     private ParametersBound parametersSyntax(ParametersSyntax parameters) {
         List<ParameterBound> parameterBounds = new ArrayList<>();
+        Set<String> parameterNames = new HashSet<>();
         for (ParameterSyntax parameter : parameters.parameters()) {
             ParameterBound parameterBound = parameterSyntax(parameter);
             parameterBounds.add(parameterBound);
+
+            String parameterName = parameterBound.parameterNameToken().value();
+            if (parameterNames.contains(parameterBound.parameterNameToken().value())) {
+                diagnostics.addDiagnostic(parameterBound.parameterNameToken(), "Parameter name `%s` is already used", parameterName);
+            }
+            parameterNames.add(parameterName);
         }
         return new ParametersBound(parameterBounds);
     }

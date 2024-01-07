@@ -20,10 +20,9 @@ public class ManualTest {
 
         String expression = """
                 {
-                    sum(a: int, b: int): int {
-                            return a + b;
+                    sum(a: int, a: int): int {
+                            return a + a;
                     }
-                    sum(4, 5);
                     println("-------------", sum(14, 5));
                 }
                 """;

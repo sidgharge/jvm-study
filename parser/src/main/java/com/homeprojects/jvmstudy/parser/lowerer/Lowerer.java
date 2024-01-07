@@ -39,10 +39,7 @@ public class Lowerer {
     }
 
     private MethodDeclarationBoundStatement methodDeclarationBoundStatement(MethodDeclarationBoundStatement methodDeclarationBoundStatement) {
-        Label endLabel = newLabel();
         BlockBoundStatement body = blockBoundStatement(methodDeclarationBoundStatement.methodBody());
-        LabelBoundStatement endStatement = new LabelBoundStatement(endLabel);
-        body.statements().add(endStatement);
         return new MethodDeclarationBoundStatement(
                 methodDeclarationBoundStatement.methodNameToken(),
                 methodDeclarationBoundStatement.openBracketToken(),
