@@ -4,6 +4,8 @@ import com.homeprojects.jvmstudy.parser.binder.statements.BlockBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.BoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.ForBlockBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.IfBlockBoundStatement;
+import com.homeprojects.jvmstudy.parser.binder.statements.MethodDeclarationBoundStatement;
+import com.homeprojects.jvmstudy.parser.binder.statements.ReturnBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.WhileBlockBoundStatement;
 
 import java.util.ArrayList;
@@ -31,8 +33,25 @@ public class Lowerer {
             case IfBlockBoundStatement ifBlockBoundStatement -> ifBlockBoundStatement(ifBlockBoundStatement);
             case WhileBlockBoundStatement whileBlockBoundStatement -> whileBlockBoundStatement(whileBlockBoundStatement);
             case ForBlockBoundStatement forBlockBoundStatement -> forBlockBoundStatement(forBlockBoundStatement);
+            case MethodDeclarationBoundStatement methodDeclarationBoundStatement -> methodDeclarationBoundStatement(methodDeclarationBoundStatement);
             default -> boundStatement;
         };
+    }
+
+    private MethodDeclarationBoundStatement methodDeclarationBoundStatement(MethodDeclarationBoundStatement methodDeclarationBoundStatement) {
+        Label endLabel = newLabel();
+        BlockBoundStatement body = blockBoundStatement(methodDeclarationBoundStatement.methodBody());
+        LabelBoundStatement endStatement = new LabelBoundStatement(endLabel);
+        body.statements().add(endStatement);
+        return new MethodDeclarationBoundStatement(
+                methodDeclarationBoundStatement.methodNameToken(),
+                methodDeclarationBoundStatement.openBracketToken(),
+                methodDeclarationBoundStatement.parametersBound(),
+                methodDeclarationBoundStatement.closedBracketToken(),
+                body,
+                methodDeclarationBoundStatement.colonToken(),
+                methodDeclarationBoundStatement.returnType()
+        );
     }
 
     private BlockBoundStatement blockBoundStatement(BlockBoundStatement blockBoundStatement) {

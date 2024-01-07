@@ -14,22 +14,18 @@ public class ManualTest {
 
 //    @Test
     public void test() {
-        String expression = """
-                {
-                    let a = 10;
-                    
-                    sum(p: int, q: int): int {
-                        let r: int = p + q;
-                        return r;
-                    }
-                    
-                    sum(5, a);
-                }
+        String expression1 = """
+                
                 """;
 
-        String expression1 = """
-                let str: int = input("hello");
-                println(str);
+        String expression = """
+                {
+                    sum(a: int, b: int): int {
+                            return a + b;
+                    }
+                    sum(4, 5);
+                    println("-------------", sum(14, 5));
+                }
                 """;
 
         Runner runner = new Runner(expression);
@@ -40,6 +36,8 @@ public class ManualTest {
         System.out.println("Parser AST:\n" + runner.syntaxStatement().prettyString(0));
 
         System.out.println("Binder AST:\n" + runner.boundStatement());
+
+        System.out.println("Lowered AST:\n" + runner.loweredBoundStatement());
 
         if (runner.diagnostics().hasErrors()) {
             runner.diagnostics().errors().forEach(System.err::println);

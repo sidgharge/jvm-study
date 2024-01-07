@@ -1,5 +1,4 @@
 - Think about binder and error messages propagating
 - better errors
 - support for double quotes in string (\")
-- methods need to be declared first efore using
-- introduce type checking for method parameters
+- methods need to be declared first before using. fix this? mayne introduce global statement and have structure like methods variables

@@ -38,4 +38,20 @@ public class MethodsTests {
                 """);
         Assertions.assertThat(result).isEqualTo(31);
     }
+
+    @Test
+    public void continuousMethodCalls() {
+        Object result = repl.evaluateToObject("""
+                {
+                    sum(p: int, q: int): int {
+                        let r: int = p + q;
+                        return r;
+                    }
+                    
+                    sum(15, 11);
+                    sum(5, 10);
+                }
+                """);
+        Assertions.assertThat(result).isEqualTo(15);
+    }
 }

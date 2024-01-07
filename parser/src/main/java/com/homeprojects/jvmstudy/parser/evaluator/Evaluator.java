@@ -42,6 +42,8 @@ public class Evaluator {
 
     private final Map<String, Object> methods;
 
+    private boolean isMethodReturned = false;
+
     private Object lastValue;
 
     public Evaluator(BoundStatement parent) {
@@ -56,9 +58,21 @@ public class Evaluator {
         Object result = boundStatement(parent);
         lastValue = null;
         return result;
-    } 
-    
+    }
+
+    public Object evaluate(BoundStatement child) {
+        if (parent instanceof BlockBoundStatement blockBoundStatement) {
+            blockBoundStatement.statements().add(child);
+        }
+        Object result = boundStatement(child);
+        lastValue = null;
+        return result;
+    }
+
     private Object boundStatement(BoundStatement statement) {
+        if (isMethodReturned) {
+            return lastValue;
+        }
         switch (statement) {
             case ExpressionBoundStatement expressionBoundStatement -> expressionBoundStatement(expressionBoundStatement);
             case BlockBoundStatement blockBoundStatement -> blockBoundStatement(blockBoundStatement);
@@ -73,6 +87,7 @@ public class Evaluator {
     }
 
     private void returnBoundStatement(ReturnBoundStatement returnBoundStatement) {
+        isMethodReturned = true;
         lastValue = boundExpression(returnBoundStatement.expression());
     }
 
@@ -165,7 +180,9 @@ public class Evaluator {
             Object arg = argumentBoundExpression(expressions.get(i));
             args[i] = arg;
         }
+        isMethodReturned = false;
         invokeMethod(methodCallBoundExpression.methodName().value(), args);
+        isMethodReturned = false;
         return lastValue;
     }
 

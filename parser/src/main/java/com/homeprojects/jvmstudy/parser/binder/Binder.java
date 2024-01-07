@@ -47,26 +47,22 @@ import com.homeprojects.jvmstudy.parser.types.Type;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class Binder {
 
     private final Diagnostics diagnostics;
 
-    private final List<Map<String, Type>> scopedTypes;
-
-    private final Map<String, MethodDeclarationBoundStatement> methods;
+    private final BoundedScope scope;
 
     private final SyntaxStatement parent;
 
     public Binder(SyntaxStatement syntaxStatement) {
         this.parent = syntaxStatement;
         this.diagnostics = new Diagnostics();
-        this.scopedTypes = new ArrayList<>();
-        this.methods = new HashMap<>();
+        this.scope = new BoundedScope();
+        this.scope.newScope();
         addGlobalMethods();
     }
 
@@ -91,6 +87,10 @@ public class Binder {
 
     private ReturnBoundStatement returnSyntaxStatement(ReturnSyntaxStatement returnSyntaxStatement) {
         BoundExpression expression = syntaxExpression(returnSyntaxStatement.expression());
+
+        if (expression.type() != scope.currentMethodType()) {
+            diagnostics.addDiagnostic(returnSyntaxStatement.returnToken().startIndex(), returnSyntaxStatement.semiColonToken().endIndex(), returnSyntaxStatement.returnToken().lineNumber(), "Expected type `%s`, got `%s`", scope.currentMethodType(), expression.type());
+        }
         return new ReturnBoundStatement(returnSyntaxStatement.returnToken(), expression, returnSyntaxStatement.semiColonToken());
     }
 
@@ -98,15 +98,16 @@ public class Binder {
         ParametersSyntax parameters = methodDeclarationSyntaxStatement.parameters();
         ParametersBound parametersBound = parametersSyntax(parameters);
 
-        scopedTypes.add(new HashMap<>());
+        scope.newScope();
 
         for (ParameterBound parameter : parametersBound.parameters()) {
-            scopedTypes.getLast().put(parameter.parameterNameToken().value(), parameter.type());
+            scope.addVariable(parameter.parameterNameToken().value(), parameter.type());
         }
 
-        BlockBoundStatement body = blockSyntaxStatement(methodDeclarationSyntaxStatement.methodBody());
-
         Type returnType = Type.fromName(methodDeclarationSyntaxStatement.returnTypeToken().value());
+        scope.addMethodType(returnType);
+
+        BlockBoundStatement body = blockSyntaxStatement(methodDeclarationSyntaxStatement.methodBody());
 
         MethodDeclarationBoundStatement methodDeclarationBoundStatement = new MethodDeclarationBoundStatement(
                 methodDeclarationSyntaxStatement.methodNameToken(),
@@ -118,9 +119,10 @@ public class Binder {
                 returnType
         );
 
-        scopedTypes.removeLast();
+        scope.removeMethodType();
+        scope.remove();
 
-        methods.put(methodDeclarationBoundStatement.methodNameToken().value(), methodDeclarationBoundStatement);
+        scope.addMethod(methodDeclarationBoundStatement.methodNameToken().value(), methodDeclarationBoundStatement);
         return methodDeclarationBoundStatement;
     }
 
@@ -139,7 +141,7 @@ public class Binder {
     }
 
     private ForBlockBoundStatement forBlockSyntaxStatement(ForBlockSyntaxStatement forBlockSyntaxStatement) {
-        scopedTypes.add(new HashMap<>());
+        scope.newScope();
         BoundStatement initializer = syntaxStatement(forBlockSyntaxStatement.initializer());
 
         ExpressionBoundStatement condition = expressionSyntaxStatement(forBlockSyntaxStatement.condition());
@@ -150,7 +152,7 @@ public class Binder {
         BoundStatement stepper = syntaxStatement(forBlockSyntaxStatement.stepper());
         BlockBoundStatement body = blockSyntaxStatement(forBlockSyntaxStatement.forBlockBody());
 
-        scopedTypes.removeLast();
+        scope.remove();
 
         return new ForBlockBoundStatement(forBlockSyntaxStatement.forKeywordToken(), forBlockSyntaxStatement.openBracket(), initializer, condition, stepper, forBlockSyntaxStatement.closedBracket(), body);
     }
@@ -195,7 +197,7 @@ public class Binder {
 
     private VariableReassignmentBoundStatement variableReassignmentSyntaxStatement(VariableReassignmentSyntaxStatement variableReassignmentSyntaxStatement) {
         String name = variableReassignmentSyntaxStatement.identifierToken().value();
-        Optional<Type> typeOptional = getTypeFromStack(variableReassignmentSyntaxStatement.identifierToken());
+        Optional<Type> typeOptional = scope.typeOfVariable(variableReassignmentSyntaxStatement.identifierToken().value());
         if (typeOptional.isEmpty()) {
             diagnostics.addDiagnostic(variableReassignmentSyntaxStatement.identifierToken(), "Variable '%s' is not defined", name);
         }
@@ -216,8 +218,7 @@ public class Binder {
 
     private BoundStatement variableDeclarationSyntaxStatement(VariableDeclarationSyntaxStatement variableDeclarationSyntaxStatement) {
         String name = variableDeclarationSyntaxStatement.identifierToken().value();
-        Map<String, Type> types = scopedTypes.getLast();
-        if (types.containsKey(name)) {
+        if (scope.isVariableInLastScope(name)) {
             diagnostics.addDiagnostic(variableDeclarationSyntaxStatement.letToken(), "Variable '%s' is already defined", name);
         }
 
@@ -230,7 +231,7 @@ public class Binder {
             diagnostics.addDiagnostic(variableDeclarationSyntaxStatement.typeToken(), "Declared type `%s` but got `%s`", type, expression.type());
         }
 
-        types.put(name, expression.type());
+        scope.addVariable(name, expression.type());
         return new VariableDeclarationBoundStatement(
                 variableDeclarationSyntaxStatement.letToken(),
                 variableDeclarationSyntaxStatement.identifierToken(),
@@ -252,7 +253,7 @@ public class Binder {
     }
 
     private BlockBoundStatement blockSyntaxStatement(BlockSyntaxStatement blockSyntaxStatement) {
-        scopedTypes.add(new HashMap<>());
+        scope.newScope();
         ArrayList<BoundStatement> statements = new ArrayList<>();
         for (SyntaxStatement statement: blockSyntaxStatement.statements()) {
             BoundStatement boundStatement = syntaxStatement(statement);
@@ -260,7 +261,7 @@ public class Binder {
                 statements.add(boundStatement);
             }
         }
-        scopedTypes.removeLast();
+        scope.remove();
         return new BlockBoundStatement(blockSyntaxStatement.openBracket(), blockSyntaxStatement.closedBracket(), statements);
     }
 
@@ -277,9 +278,13 @@ public class Binder {
     private MethodCallBoundExpression methodCallSyntaxExpression(MethodCallSyntaxExpression methodCallSyntaxExpression) {
         ArgumentsBound argumentsBound = argumentsSyntax(methodCallSyntaxExpression.argumentsSyntax());
 
-        MethodDeclarationBoundStatement method = findMethod(methodCallSyntaxExpression.methodName().value(), argumentsBound);
+        MethodDeclarationBoundStatement method = findMethod(methodCallSyntaxExpression.methodName().value(), argumentsBound)
+                .orElseGet(() -> {
+                    diagnostics.addDiagnostic(methodCallSyntaxExpression.methodName().startIndex(), methodCallSyntaxExpression.methodName().endIndex(), methodCallSyntaxExpression.methodName().lineNumber(), "Method %s does not exist", methodCallSyntaxExpression.methodName().value());
+                    return null;
+                });
 
-        if (method.methodNameToken().value().equals("println")) {
+        if (method == null || method.methodNameToken().value().equals("println")) {
             return new MethodCallBoundExpression(
                     methodCallSyntaxExpression.methodName(),
                     methodCallSyntaxExpression.openBrace(),
@@ -318,8 +323,8 @@ public class Binder {
         );
     }
 
-    private MethodDeclarationBoundStatement findMethod(String methodName, ArgumentsBound arguments) {
-        return methods.get(methodName);
+    private Optional<MethodDeclarationBoundStatement> findMethod(String methodName, ArgumentsBound arguments) {
+        return scope.findMethod(methodName);
     }
 
     private ArgumentsBound argumentsSyntax(ArgumentsSyntax argumentsSyntax) {
@@ -414,7 +419,7 @@ public class Binder {
             return new LiteralBoundExpression(token, Type.STRING);
         }
         if (token.type() == TokenType.IDENTIFIER_TOKEN) {
-            Optional<Type> type = getTypeFromStack(token);
+            Optional<Type> type = scope.typeOfVariable(token.value());
             if (type.isEmpty()) {
                 this.diagnostics.addDiagnostic(token, "Variable '%s' is not in scope", token.value());
                 return new BoundExpression.NoOpBoundExpression(token.value(), token.startIndex(), token.endIndex(), token.lineNumber());
@@ -426,18 +431,9 @@ public class Binder {
         return new BoundExpression.NoOpBoundExpression(token.value(), token.startIndex(), token.endIndex(), token.lineNumber());
     }
 
-    private Optional<Type> getTypeFromStack(Token token) {
-        for (int i = scopedTypes.size() - 1; i >= 0; i--) {
-            if (scopedTypes.get(i).containsKey(token.value())) {
-                return Optional.of(scopedTypes.get(i).get(token.value()));
-            }
-        }
-        return Optional.empty();
-    }
-
     private void addGlobalMethods() {
-        methods.put("input", new MethodDeclarationBoundStatement(new Token("input", TokenType.IDENTIFIER_TOKEN, 0 , 0, 0), null, new ParametersBound(Collections.emptyList()), null, null, null, Type.STRING));
-        methods.put("println", new MethodDeclarationBoundStatement(new Token("println", TokenType.IDENTIFIER_TOKEN, 0 , 0, 0), null, null, null, null, null, Type.STRING));
+        scope.addMethod("input", new MethodDeclarationBoundStatement(new Token("input", TokenType.IDENTIFIER_TOKEN, 0 , 0, 0), null, new ParametersBound(Collections.emptyList()), null, null, null, Type.STRING));
+        scope.addMethod("println", new MethodDeclarationBoundStatement(new Token("println", TokenType.IDENTIFIER_TOKEN, 0 , 0, 0), null, null, null, null, null, Type.STRING));
     }
 
     public Diagnostics diagnostics() {
