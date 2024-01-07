@@ -53,7 +53,7 @@ public class ForBlocksTests {
                     {
                        for(let b = 5; b < 10; b = b + 1) {
                             a = a + 2;
-                            for(let b = 15; b < 20; b = b + 1) {
+                            for(let c = 15; c < 20; c = c + 1) {
                                 a = a + 1;
                             }
                        }

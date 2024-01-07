@@ -227,8 +227,12 @@ public class Binder {
 
     private BoundStatement variableDeclarationSyntaxStatement(VariableDeclarationSyntaxStatement variableDeclarationSyntaxStatement) {
         String name = variableDeclarationSyntaxStatement.identifierToken().value();
-        if (scope.isVariableInLastScope(name)) {
-            diagnostics.addDiagnostic(variableDeclarationSyntaxStatement.letToken(), "Variable '%s' is already defined", name);
+        if (scope.isVariableDeclared(name)) {
+            diagnostics.addDiagnostic(
+                    variableDeclarationSyntaxStatement.letToken().startIndex(),
+                    variableDeclarationSyntaxStatement.identifierToken().endIndex(),
+                    variableDeclarationSyntaxStatement.letToken().lineNumber(),
+                    "Variable '%s' is already defined", name);
         }
 
         Token colonToken = getOrDefaultToken(variableDeclarationSyntaxStatement.colonToken(), ":", TokenType.COLON_TOKEN);

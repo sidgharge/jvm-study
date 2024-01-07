@@ -45,8 +45,13 @@ public class BoundedScope {
         methods.removeLast();
     }
 
-    public boolean isVariableInLastScope(String name) {
-        return variables.getLast().containsKey(name);
+    public boolean isVariableDeclared(String name) {
+        for (int i = variables.size() - 1; i >= 0; i--) {
+            if (variables.get(i).containsKey(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Optional<Type> typeOfVariable(String name) {

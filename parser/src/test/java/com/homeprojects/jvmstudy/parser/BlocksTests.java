@@ -57,13 +57,13 @@ public class BlocksTests {
                     let a = 10;
                     {
                         let b = 10;
-                        let a = a * 20 + b;
+                        a = a * 20 + b;
                     }
                     a = a;
                 }
                 """;
         Object result = repl.evaluateToObject(expression);
-        Assertions.assertThat(result).isEqualTo(10);
+        Assertions.assertThat(result).isEqualTo(210);
     }
 
     @Test

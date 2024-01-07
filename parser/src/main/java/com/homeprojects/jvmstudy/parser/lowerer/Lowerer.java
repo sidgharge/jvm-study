@@ -5,10 +5,12 @@ import com.homeprojects.jvmstudy.parser.binder.statements.BoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.ForBlockBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.IfBlockBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.MethodDeclarationBoundStatement;
-import com.homeprojects.jvmstudy.parser.binder.statements.ReturnBoundStatement;
 import com.homeprojects.jvmstudy.parser.binder.statements.WhileBlockBoundStatement;
+import com.homeprojects.jvmstudy.parser.lexer.Token;
+import com.homeprojects.jvmstudy.parser.lexer.TokenType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,42 +26,54 @@ public class Lowerer {
     }
 
     public BoundStatement lower() {
-        return boundStatement(parent);
+        List<BoundStatement> statements = boundStatement(parent);
+        return new BlockBoundStatement(
+                new Token("{", TokenType.OPEN_CURLY_BRACKET_TOKEN, 0, 0, 0),
+                new Token("}", TokenType.CLOSED_CURLY_BRACKET_TOKEN, 0 , 0, 0),
+                statements
+        );
     }
 
-    private BoundStatement boundStatement(BoundStatement boundStatement) {
+    private List<BoundStatement> boundStatement(BoundStatement boundStatement) {
         return switch (boundStatement) {
             case BlockBoundStatement blockBoundStatement -> blockBoundStatement(blockBoundStatement);
             case IfBlockBoundStatement ifBlockBoundStatement -> ifBlockBoundStatement(ifBlockBoundStatement);
             case WhileBlockBoundStatement whileBlockBoundStatement -> whileBlockBoundStatement(whileBlockBoundStatement);
             case ForBlockBoundStatement forBlockBoundStatement -> forBlockBoundStatement(forBlockBoundStatement);
             case MethodDeclarationBoundStatement methodDeclarationBoundStatement -> methodDeclarationBoundStatement(methodDeclarationBoundStatement);
-            default -> boundStatement;
+            default -> Arrays.asList(boundStatement);
         };
     }
 
-    private MethodDeclarationBoundStatement methodDeclarationBoundStatement(MethodDeclarationBoundStatement methodDeclarationBoundStatement) {
-        BlockBoundStatement body = blockBoundStatement(methodDeclarationBoundStatement.methodBody());
-        return new MethodDeclarationBoundStatement(
+    private List<BoundStatement> methodDeclarationBoundStatement(MethodDeclarationBoundStatement methodDeclarationBoundStatement) {
+        List<BoundStatement> statements = blockBoundStatement(methodDeclarationBoundStatement.methodBody());
+        BlockBoundStatement blockBoundStatement = new BlockBoundStatement(
+                methodDeclarationBoundStatement.methodBody().openBrace(),
+                methodDeclarationBoundStatement.methodBody().closedBrace(),
+                statements
+        );
+
+        MethodDeclarationBoundStatement updatedMethodDeclarationBoundStatement = new MethodDeclarationBoundStatement(
                 methodDeclarationBoundStatement.methodNameToken(),
                 methodDeclarationBoundStatement.openBracketToken(),
                 methodDeclarationBoundStatement.parametersBound(),
                 methodDeclarationBoundStatement.closedBracketToken(),
-                body,
+                blockBoundStatement,
                 methodDeclarationBoundStatement.colonToken(),
                 methodDeclarationBoundStatement.returnType()
         );
+
+        return Arrays.asList(updatedMethodDeclarationBoundStatement);
     }
 
-    private BlockBoundStatement blockBoundStatement(BlockBoundStatement blockBoundStatement) {
-        List<BoundStatement> statements = blockBoundStatement.statements().stream().map(this::boundStatement).collect(Collectors.toList());
-        if (statements.equals(blockBoundStatement.statements())) {
-            return blockBoundStatement;
-        }
-        return new BlockBoundStatement(blockBoundStatement.openBrace(), blockBoundStatement.closedBrace(), statements);
+    private List<BoundStatement> blockBoundStatement(BlockBoundStatement blockBoundStatement) {
+        return blockBoundStatement.statements()
+                .stream()
+                .flatMap(statement -> boundStatement(statement).stream())
+                .collect(Collectors.toList());
     }
 
-    private BoundStatement ifBlockBoundStatement(IfBlockBoundStatement ifStatement) {
+    private List<BoundStatement> ifBlockBoundStatement(IfBlockBoundStatement ifStatement) {
         List<BoundStatement> statements = new ArrayList<>();
 
         Label endLabel = newLabel();
@@ -68,19 +82,19 @@ public class Lowerer {
         ConditionalGotoBoundStatement conditionalGotoBoundStatement = new ConditionalGotoBoundStatement(ifStatement.condition(), elseLabel);
 
         statements.add(conditionalGotoBoundStatement);
-        statements.addAll(blockBoundStatement(ifStatement.ifBlockBody()).statements());
+        statements.addAll(blockBoundStatement(ifStatement.ifBlockBody()));
 
         if (ifStatement.elseBlockBody().isPresent()) {
             statements.add(new GotoBoundStatement(endLabel));
             statements.add(new LabelBoundStatement(elseLabel));
-            statements.addAll(blockBoundStatement(ifStatement.elseBlockBody().get().elseBlockBody()).statements());
+            statements.addAll(blockBoundStatement(ifStatement.elseBlockBody().get().elseBlockBody()));
         }
         statements.add(endStatement);
 
-        return new BlockBoundStatement(ifStatement.ifBlockBody().openBrace(), ifStatement.ifBlockBody().closedBrace(), statements);
+        return statements;
     }
 
-    private BlockBoundStatement whileBlockBoundStatement(WhileBlockBoundStatement whileStatement) {
+    private List<BoundStatement> whileBlockBoundStatement(WhileBlockBoundStatement whileStatement) {
         List<BoundStatement> statements = new ArrayList<>();
 
         Label startLabel = newLabel();
@@ -90,38 +104,38 @@ public class Lowerer {
 
         statements.add(new ConditionalGotoBoundStatement(whileStatement.condition(), endLabel));
 
-        List<BoundStatement> whileBodyStatements = blockBoundStatement(whileStatement.whileBlockBody()).statements();
+        List<BoundStatement> whileBodyStatements = blockBoundStatement(whileStatement.whileBlockBody());
         statements.addAll(whileBodyStatements);
 
         statements.add(new GotoBoundStatement(startLabel));
 
         statements.add(new LabelBoundStatement(endLabel));
 
-        return new BlockBoundStatement(whileStatement.whileBlockBody().openBrace(), whileStatement.whileBlockBody().closedBrace(), statements);
+        return statements;
     }
 
-    private BlockBoundStatement forBlockBoundStatement(ForBlockBoundStatement forStatement) {
+    private List<BoundStatement> forBlockBoundStatement(ForBlockBoundStatement forStatement) {
         List<BoundStatement> statements = new ArrayList<>();
 
         Label startLabel = newLabel();
         Label endLabel = newLabel();
 
-        statements.add(boundStatement(forStatement.initializer()));
+        statements.addAll(boundStatement(forStatement.initializer()));
 
         statements.add(new LabelBoundStatement(startLabel));
 
         statements.add(new ConditionalGotoBoundStatement(forStatement.condition().expression(), endLabel));
 
-        List<BoundStatement> whileBodyStatements = blockBoundStatement(forStatement.forBlockBody()).statements();
+        List<BoundStatement> whileBodyStatements = blockBoundStatement(forStatement.forBlockBody());
         statements.addAll(whileBodyStatements);
 
-        statements.add(boundStatement(forStatement.stepper()));
+        statements.addAll(boundStatement(forStatement.stepper()));
 
         statements.add(new GotoBoundStatement(startLabel));
 
         statements.add(new LabelBoundStatement(endLabel));
 
-        return new BlockBoundStatement(forStatement.forBlockBody().openBrace(), forStatement.forBlockBody().closedBrace(), statements);
+        return statements;
     }
 
     private Label newLabel() {

@@ -20,10 +20,16 @@ public class ManualTest {
 
         String expression = """
                 {
-                    sum(a: int, a: int): int {
-                            return a + a;
+                    let a = 11;
+                    {
+                       for(let b = 5; b < 10; b = b + 1) {
+                            let a = a + 2;
+                            for(let c = 15; c < 20; c = c + 1) {
+                                a = a + 1;
+                            }
+                       }
                     }
-                    println("-------------", sum(14, 5));
+                    println("is a = 46 ?", a);
                 }
                 """;
 
