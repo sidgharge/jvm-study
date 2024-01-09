@@ -14,22 +14,26 @@ public class ManualTest {
 
 //    @Test
     public void test() {
-        String expression1 = """
-                
+        String expression = """
+                let a = 10;
                 """;
 
-        String expression = """
+        String expression1 = """
                 {
                     let a = 11;
                     {
                        for(let b = 5; b < 10; b = b + 1) {
-                            let a = a + 2;
+                            a = a + 2;
                             for(let c = 15; c < 20; c = c + 1) {
                                 a = a + 1;
                             }
                        }
                     }
-                    println("is a = 46 ?", a);
+                    {
+                        let b = 10;
+                        a = a + 10;
+                    }
+                    println("is a = 56 ?", a);
                 }
                 """;
 

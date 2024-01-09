@@ -62,6 +62,18 @@ public class Parser {
         );
     }
 
+    public List<SyntaxStatement> parseStatments() {
+        List<SyntaxStatement> statements = new ArrayList<>();
+        while (true) {
+            if (current().type().equals(TokenType.END_OF_FILE_TOKEN)) {
+                break;
+            }
+            SyntaxStatement statement = parseStatement();
+            statements.add(statement);
+        }
+        return statements;
+    }
+
     public SyntaxStatement parseStatement() {
         Token token = current();
         return switch (token.type()) {

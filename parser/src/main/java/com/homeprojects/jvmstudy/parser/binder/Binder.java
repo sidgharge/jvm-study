@@ -97,6 +97,18 @@ public class Binder {
     }
 
     private MethodDeclarationBoundStatement methodDeclarationSyntaxStatement(MethodDeclarationSyntaxStatement methodDeclarationSyntaxStatement) {
+        Optional<MethodDeclarationBoundStatement> alreadyDeclaredMethod = findMethod(methodDeclarationSyntaxStatement.methodNameToken().value(), null);
+        if (alreadyDeclaredMethod.isPresent()) {
+            diagnostics.addDiagnostic(
+                    methodDeclarationSyntaxStatement.methodNameToken().startIndex(),
+                    methodDeclarationSyntaxStatement.closedBracketToken().endIndex(),
+                    methodDeclarationSyntaxStatement.methodNameToken().lineNumber(),
+                    "Method with name `%s` is already defined",
+                    methodDeclarationSyntaxStatement.methodNameToken().value()
+            );
+            return alreadyDeclaredMethod.get();
+        }
+
         ParametersSyntax parameters = methodDeclarationSyntaxStatement.parameters();
         ParametersBound parametersBound = parametersSyntax(parameters);
 
