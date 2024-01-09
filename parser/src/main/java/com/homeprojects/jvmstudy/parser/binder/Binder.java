@@ -101,7 +101,7 @@ public class Binder {
         if (alreadyDeclaredMethod.isPresent()) {
             diagnostics.addDiagnostic(
                     methodDeclarationSyntaxStatement.methodNameToken().startIndex(),
-                    methodDeclarationSyntaxStatement.closedBracketToken().endIndex(),
+                    methodDeclarationSyntaxStatement.returnTypeToken().endIndex(),
                     methodDeclarationSyntaxStatement.methodNameToken().lineNumber(),
                     "Method with name `%s` is already defined",
                     methodDeclarationSyntaxStatement.methodNameToken().value()
