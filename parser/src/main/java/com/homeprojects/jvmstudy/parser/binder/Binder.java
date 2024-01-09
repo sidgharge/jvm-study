@@ -90,7 +90,7 @@ public class Binder {
     private ReturnBoundStatement returnSyntaxStatement(ReturnSyntaxStatement returnSyntaxStatement) {
         BoundExpression expression = syntaxExpression(returnSyntaxStatement.expression());
 
-        if (expression.type() != scope.currentMethodType()) {
+        if (expression.type() != scope.currentMethodType() && scope.currentMethodType() != Type.UNKNOWN) {
             diagnostics.addDiagnostic(returnSyntaxStatement.returnToken().startIndex(), returnSyntaxStatement.semiColonToken().endIndex(), returnSyntaxStatement.returnToken().lineNumber(), "Expected type `%s`, got `%s`", scope.currentMethodType(), expression.type());
         }
         return new ReturnBoundStatement(returnSyntaxStatement.returnToken(), expression, returnSyntaxStatement.semiColonToken());
