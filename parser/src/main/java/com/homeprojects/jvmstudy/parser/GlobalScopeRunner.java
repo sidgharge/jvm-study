@@ -54,7 +54,7 @@ public class GlobalScopeRunner {
         this.loweredBoundStatement = lowerer.lower();
 
         if (this.diagnostics.hasErrors()) {
-            this.syntaxStatement.statements().removeAll(syntaxStatements);
+            syntaxStatements.forEach(__ -> this.syntaxStatement.statements().removeLast());
             return null;
         }
 
