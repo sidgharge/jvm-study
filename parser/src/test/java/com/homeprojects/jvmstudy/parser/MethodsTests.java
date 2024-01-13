@@ -21,6 +21,32 @@ public class MethodsTests {
     }
 
     @Test
+    public void methodWithVariableInputAndWithNumbersInName() {
+        Object result = runner.run("""
+                sum11(p: int, q: int): int {
+                        let r: int = p + q;
+                        return r;
+                }
+                let a = 10;
+                sum11(5, a);
+                """);
+        Assertions.assertThat(result).isEqualTo(15);
+    }
+
+    @Test
+    public void methodWithVariableInputAndWithNumbersInName2() {
+        Object result = runner.run("""
+                sum11a(p: int, q: int): int {
+                        let r: int = p + q;
+                        return r;
+                }
+                let a = 10;
+                sum11a(5, a);
+                """);
+        Assertions.assertThat(result).isEqualTo(15);
+    }
+
+    @Test
     public void nestedMethodCalls() {
         Object result = runner.run("""
                 sum(p: int, q: int): int {

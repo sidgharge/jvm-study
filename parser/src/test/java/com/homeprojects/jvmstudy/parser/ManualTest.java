@@ -19,11 +19,11 @@ public class ManualTest {
                 """;
 
         String expression = """
-                println("SUM--------------", sum(5, 12));
-                sum(p: int, q: int): int {
-                        let r: int = p + q;
-                        return r;
+                sum1(a: int, b: int): int {
+                    return a + b;
                 }
+                
+                println("sum1(10, 20) =", sum1(10, 20));
                 """;
 
         Runner runner = new Runner(expression);

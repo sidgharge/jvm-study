@@ -196,7 +196,7 @@ public class Lexer {
             if (ch == NULL_CHAR) {
                 break;
             }
-            if (!isAlphabetic(ch)) {
+            if (!Character.isAlphabetic(ch) && !Character.isDigit(ch)) {
                 break;
             }
             builder.append(ch);
