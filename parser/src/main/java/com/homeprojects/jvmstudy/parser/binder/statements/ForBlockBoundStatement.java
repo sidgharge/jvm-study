@@ -12,6 +12,21 @@ public record ForBlockBoundStatement(
         BlockBoundStatement forBlockBody) implements BoundStatement {
 
     @Override
+    public int startIndex() {
+        return forKeywordToken.startIndex();
+    }
+
+    @Override
+    public int endIndex() {
+        return forKeywordToken.endIndex();
+    }
+
+    @Override
+    public int lineNumber() {
+        return forKeywordToken.lineNumber();
+    }
+
+    @Override
     public String toString() {
         return prettyString(0);
     }

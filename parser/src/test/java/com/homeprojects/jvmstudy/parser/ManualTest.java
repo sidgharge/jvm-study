@@ -14,26 +14,15 @@ public class ManualTest {
 
 //    @Test
     public void test() {
-        String expression = """
+        String expression1 = """
                 let a = 10;
                 """;
 
-        String expression1 = """
-                {
-                    let a = 11;
-                    {
-                       for(let b = 5; b < 10; b = b + 1) {
-                            a = a + 2;
-                            for(let c = 15; c < 20; c = c + 1) {
-                                a = a + 1;
-                            }
-                       }
-                    }
-                    {
-                        let b = 10;
-                        a = a + 10;
-                    }
-                    println("is a = 56 ?", a);
+        String expression = """
+                println("SUM--------------", sum(5, 12));
+                sum(p: int, q: int): int {
+                        let r: int = p + q;
+                        return r;
                 }
                 """;
 

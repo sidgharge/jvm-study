@@ -16,6 +16,21 @@ public record MethodDeclarationBoundStatement(
         Type returnType) implements BoundStatement {
 
     @Override
+    public int startIndex() {
+        return methodNameToken.startIndex();
+    }
+
+    @Override
+    public int endIndex() {
+        return methodNameToken.endIndex();
+    }
+
+    @Override
+    public int lineNumber() {
+        return methodNameToken.lineNumber();
+    }
+
+    @Override
     public String toString() {
         return prettyString(0);
     }

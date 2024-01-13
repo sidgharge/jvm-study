@@ -9,6 +9,22 @@ public record WhileBlockBoundStatement(
         BoundExpression condition,
         Token closedBracket,
         BlockBoundStatement whileBlockBody) implements BoundStatement {
+
+    @Override
+    public int startIndex() {
+        return whileKeywordToken.startIndex();
+    }
+
+    @Override
+    public int endIndex() {
+        return whileKeywordToken.endIndex();
+    }
+
+    @Override
+    public int lineNumber() {
+        return whileKeywordToken.lineNumber();
+    }
+
     @Override
     public String toString() {
         return prettyString(0);

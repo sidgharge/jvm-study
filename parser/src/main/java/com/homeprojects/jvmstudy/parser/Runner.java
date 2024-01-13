@@ -7,6 +7,7 @@ import com.homeprojects.jvmstudy.parser.evaluator.Evaluator;
 import com.homeprojects.jvmstudy.parser.lexer.Lexer;
 import com.homeprojects.jvmstudy.parser.lexer.Token;
 import com.homeprojects.jvmstudy.parser.lowerer.Lowerer;
+import com.homeprojects.jvmstudy.parser.statements.BlockSyntaxStatement;
 import com.homeprojects.jvmstudy.parser.statements.SyntaxStatement;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class Runner {
 
     private List<Token> tokens;
 
-    private SyntaxStatement syntaxStatement;
+    private BlockSyntaxStatement syntaxStatement;
 
     private BoundStatement boundStatement;
 

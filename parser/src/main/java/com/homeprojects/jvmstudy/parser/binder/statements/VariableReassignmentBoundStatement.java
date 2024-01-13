@@ -10,6 +10,21 @@ public record VariableReassignmentBoundStatement(
         Token semiColonToken) implements BoundStatement {
 
     @Override
+    public int startIndex() {
+        return identifierToken.startIndex();
+    }
+
+    @Override
+    public int endIndex() {
+        return identifierToken.endIndex();
+    }
+
+    @Override
+    public int lineNumber() {
+        return identifierToken.lineNumber();
+    }
+
+    @Override
     public String toString() {
         return prettyString(0);
     }

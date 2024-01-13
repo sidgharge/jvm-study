@@ -14,6 +14,21 @@ public record VariableDeclarationBoundStatement(
         Token semiColonToken) implements BoundStatement {
 
     @Override
+    public int startIndex() {
+        return letToken.startIndex();
+    }
+
+    @Override
+    public int endIndex() {
+        return letToken.endIndex();
+    }
+
+    @Override
+    public int lineNumber() {
+        return letToken.lineNumber();
+    }
+
+    @Override
     public String toString() {
         return prettyString(0);
     }

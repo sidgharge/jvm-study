@@ -14,6 +14,21 @@ public record IfBlockBoundStatement(
         Optional<ElseBlockBoundStatement> elseBlockBody) implements BoundStatement {
 
     @Override
+    public int startIndex() {
+        return ifKeywordToken.startIndex();
+    }
+
+    @Override
+    public int endIndex() {
+        return ifKeywordToken.endIndex();
+    }
+
+    @Override
+    public int lineNumber() {
+        return ifKeywordToken.lineNumber();
+    }
+
+    @Override
     public String toString() {
         return prettyString(0);
     }

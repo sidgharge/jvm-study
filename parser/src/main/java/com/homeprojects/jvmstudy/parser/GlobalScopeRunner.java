@@ -42,7 +42,7 @@ public class GlobalScopeRunner {
         this.tokens = lexer.tokenize();
 
         Parser parser = new Parser(tokens);
-        List<SyntaxStatement> syntaxStatements = parser.parseStatments();
+        List<SyntaxStatement> syntaxStatements = parser.parseStatements();
         this.syntaxStatement.statements().addAll(syntaxStatements);
         diagnostics.errors().addAll(parser.diagnostics().errors());
 

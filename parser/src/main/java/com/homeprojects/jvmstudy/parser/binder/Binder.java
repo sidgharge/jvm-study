@@ -47,10 +47,12 @@ import com.homeprojects.jvmstudy.parser.types.Type;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Binder {
 
@@ -58,9 +60,9 @@ public class Binder {
 
     private final BoundedScope scope;
 
-    private final SyntaxStatement parent;
+    private final BlockSyntaxStatement parent;
 
-    public Binder(SyntaxStatement syntaxStatement) {
+    public Binder(BlockSyntaxStatement syntaxStatement) {
         this.parent = syntaxStatement;
         this.diagnostics = new Diagnostics();
         this.scope = new BoundedScope();
@@ -69,10 +71,15 @@ public class Binder {
     }
 
     public BoundStatement bind() {
-        return syntaxStatement(parent);
+        List<BoundStatement> topLevelStatements = parent.statements().stream()
+                .sorted(Comparator.comparing(s -> s instanceof MethodDeclarationSyntaxStatement ? 1 : 2))
+                .map(this::topLevelStatements)
+                .toList();
+
+        return new BlockBoundStatement(parent.openBracket(), parent.closedBracket(), topLevelStatements);
     }
 
-    private BoundStatement syntaxStatement(SyntaxStatement statement) {
+    private BoundStatement topLevelStatements(SyntaxStatement statement) {
         return switch (statement) {
             case BlockSyntaxStatement blockSyntaxStatement -> blockSyntaxStatement(blockSyntaxStatement);
             case ExpressionSyntaxStatement expressionSyntaxStatement -> expressionSyntaxStatement(expressionSyntaxStatement);
@@ -82,9 +89,37 @@ public class Binder {
             case WhileBlockSyntaxStatement whileBlockSyntaxStatement -> whileBlockSyntaxStatement(whileBlockSyntaxStatement);
             case ForBlockSyntaxStatement forBlockSyntaxStatement -> forBlockSyntaxStatement(forBlockSyntaxStatement);
             case MethodDeclarationSyntaxStatement methodDeclarationSyntaxStatement -> methodDeclarationSyntaxStatement(methodDeclarationSyntaxStatement);
+            default -> unAllowedTopLevelStatement(statement);
+        };
+    }
+
+    private BoundStatement unAllowedTopLevelStatement(SyntaxStatement statement) {
+        BoundStatement boundStatement = blockLevelSyntaxStatement(statement);
+        diagnostics.addDiagnostic(boundStatement.startIndex(), boundStatement.endIndex(), boundStatement.lineNumber(), "statement of type `%s` is not allowed at top level", statement.statementType());
+        return boundStatement;
+    }
+
+    private BoundStatement blockLevelSyntaxStatement(SyntaxStatement statement) {
+        return switch (statement) {
+            case BlockSyntaxStatement blockSyntaxStatement -> blockSyntaxStatement(blockSyntaxStatement);
+            case ExpressionSyntaxStatement expressionSyntaxStatement -> expressionSyntaxStatement(expressionSyntaxStatement);
+            case VariableDeclarationSyntaxStatement variableDeclarationSyntaxStatement -> variableDeclarationSyntaxStatement(variableDeclarationSyntaxStatement);
+            case VariableReassignmentSyntaxStatement variableReassignmentSyntaxStatement -> variableReassignmentSyntaxStatement(variableReassignmentSyntaxStatement);
+            case IfBlockSyntaxStatement ifBlockSyntaxStatement -> ifBlockSyntaxStatement(ifBlockSyntaxStatement);
+            case WhileBlockSyntaxStatement whileBlockSyntaxStatement -> whileBlockSyntaxStatement(whileBlockSyntaxStatement);
+            case ForBlockSyntaxStatement forBlockSyntaxStatement -> forBlockSyntaxStatement(forBlockSyntaxStatement);
             case ReturnSyntaxStatement returnSyntaxStatement -> returnSyntaxStatement(returnSyntaxStatement);
+            default -> unAllowedBlockLevelStatement(statement);
+        };
+    }
+
+    private BoundStatement unAllowedBlockLevelStatement(SyntaxStatement statement) {
+        BoundStatement boundStatement = switch (statement) {
+            case MethodDeclarationSyntaxStatement methodDeclarationSyntaxStatement -> methodDeclarationSyntaxStatement(methodDeclarationSyntaxStatement);
             default -> throw new RuntimeException("Unhandled statement type: " + statement.statementType());
         };
+        diagnostics.addDiagnostic(boundStatement.startIndex(), boundStatement.endIndex(), boundStatement.lineNumber(), "statement of type `%s` is not allowed inside blocks", statement.statementType());
+        return boundStatement;
     }
 
     private ReturnBoundStatement returnSyntaxStatement(ReturnSyntaxStatement returnSyntaxStatement) {
@@ -119,6 +154,12 @@ public class Binder {
         }
 
         Type returnType = Type.fromName(methodDeclarationSyntaxStatement.returnTypeToken().value());
+        if (returnType == Type.UNKNOWN) {
+            diagnostics.addDiagnostic(methodDeclarationSyntaxStatement.returnTypeToken().startIndex(),
+                    methodDeclarationSyntaxStatement.returnTypeToken().endIndex(),
+                    methodDeclarationSyntaxStatement.returnTypeToken().lineNumber(),
+                    "Invalid return type `%s`", methodDeclarationSyntaxStatement.returnTypeToken().value());
+        }
         scope.addMethodType(returnType);
 
         BlockBoundStatement body = blockSyntaxStatement(methodDeclarationSyntaxStatement.methodBody());
@@ -163,14 +204,14 @@ public class Binder {
 
     private ForBlockBoundStatement forBlockSyntaxStatement(ForBlockSyntaxStatement forBlockSyntaxStatement) {
         scope.newScope();
-        BoundStatement initializer = syntaxStatement(forBlockSyntaxStatement.initializer());
+        BoundStatement initializer = blockLevelSyntaxStatement(forBlockSyntaxStatement.initializer());
 
         ExpressionBoundStatement condition = expressionSyntaxStatement(forBlockSyntaxStatement.condition());
         if (!condition.expression().type().equals(Type.BOOLEAN)) {
             diagnostics.addDiagnostic(forBlockSyntaxStatement.forKeywordToken(), "condition in `for` loop should evaluate to a boolean, but got `%s`", condition.expression().type());
         }
 
-        BoundStatement stepper = syntaxStatement(forBlockSyntaxStatement.stepper());
+        BoundStatement stepper = blockLevelSyntaxStatement(forBlockSyntaxStatement.stepper());
         BlockBoundStatement body = blockSyntaxStatement(forBlockSyntaxStatement.forBlockBody());
 
         scope.remove();
@@ -281,7 +322,7 @@ public class Binder {
         scope.newScope();
         ArrayList<BoundStatement> statements = new ArrayList<>();
         for (SyntaxStatement statement: blockSyntaxStatement.statements()) {
-            BoundStatement boundStatement = syntaxStatement(statement);
+            BoundStatement boundStatement = blockLevelSyntaxStatement(statement);
             if (boundStatement != null) {
                 statements.add(boundStatement);
             }

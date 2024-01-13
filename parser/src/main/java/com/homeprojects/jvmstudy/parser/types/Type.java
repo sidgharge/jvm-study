@@ -29,7 +29,7 @@ public enum Type {
         return Arrays.stream(values())
                 .filter(t -> t.typeName.equals(typeName))
                 .findFirst()
-                .orElse(null);
+                .orElse(UNKNOWN);
     }
 
 }

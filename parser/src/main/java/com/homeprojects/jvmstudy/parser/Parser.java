@@ -46,7 +46,7 @@ public class Parser {
         this.tokenPrecedence = new TokenPrecedence();
     }
 
-    public SyntaxStatement parse() {
+    public BlockSyntaxStatement parse() {
         List<SyntaxStatement> statements = new ArrayList<>();
         while (true) {
             if (current().type().equals(TokenType.END_OF_FILE_TOKEN)) {
@@ -62,7 +62,7 @@ public class Parser {
         );
     }
 
-    public List<SyntaxStatement> parseStatments() {
+    public List<SyntaxStatement> parseStatements() {
         List<SyntaxStatement> statements = new ArrayList<>();
         while (true) {
             if (current().type().equals(TokenType.END_OF_FILE_TOKEN)) {
